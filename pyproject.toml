@@ -5,14 +5,21 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "blast-tsad"
 version = "1.0.0"
-description = "Bounded-latency score attribution for streaming time-series anomaly detection"
+description = "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
   {name = "Hammad Ali Haider"},
-  {name = "Panpan Zheng"},
   {name = "Marcin Pietroń"},
   {name = "Roberto Corizzo"},
+  {name = "Panpan Zheng"},
+]
+keywords = [
+  "time-series anomaly detection",
+  "streaming anomaly detection",
+  "causal scoring",
+  "temporal localization",
+  "bounded latency",
 ]
 dependencies = [
   "numpy==2.4.4",
@@ -24,6 +31,7 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/hammadhaideer/BLAST-TSAD"
+Documentation = "https://github.com/hammadhaideer/BLAST-TSAD/tree/main/docs"
 
 [tool.setuptools]
 packages = ["blast"]
