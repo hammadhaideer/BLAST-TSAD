@@ -1,30 +1,39 @@
 # Public release status
 
-## Visibility
+## Status
 
-This repository is public and may be linked from the BLAST manuscript.
+**BLAST-TSAD v1.0.0 — stable public code companion for the ICASSP 2027 submission.**
 
-## What is public now
+This repository is public and may be linked directly from the submitted manuscript.
 
-- core M70 BLAST scoring code;
-- confirmatory-analysis code;
-- frozen cohort configuration files;
-- environment/dependency specifications;
-- protocol, data-layout, and reproducibility documentation;
-- citation metadata.
+## Public scope
 
-## What is intentionally not public
+Included:
+
+- self-contained BLAST reference implementation;
+- primary causal score construction;
+- robust training-prefix normalization;
+- VUS-PR evaluation helpers;
+- U237 development-selection runner;
+- M70 label-free scoring runner;
+- M70 frozen-delay confirmatory evaluator;
+- frozen cohort manifests;
+- environment pins, tests, CI, citation metadata, and documentation.
+
+Intentionally not included:
 
 - manuscript source or submitted PDF;
 - figures or paper tables;
-- generated numerical results;
-- pointwise score arrays;
+- generated paper-result files;
+- pointwise/intermediate score archives;
 - raw benchmark datasets;
-- model checkpoints and caches;
-- the internal audit bundle and development logs.
+- model checkpoints/caches;
+- private audit bundle and internal development logs.
 
-## Dependency-closure status
+## Stability policy
 
-The current code companion still depends on helper/freeze artifacts from the frozen experimental repository that are not yet present in this public snapshot. The public repository should not be described as a complete clean-room numerical reproduction until those exact frozen dependencies are copied from the audit bundle and verified.
+The public method/protocol surface is frozen for the submission. Changes should be limited to genuine correctness fixes, security fixes, or bibliographic metadata updates. If the paper receives final proceedings metadata, `CITATION.cff` may be updated without changing the scientific implementation.
 
-This file will be updated when dependency closure has been completed.
+## Paper status
+
+Submitted to ICASSP 2027. This repository does not imply acceptance or publication.
