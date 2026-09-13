@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Private research material
+data/
+results/
+figures/
+manuscript/
+references/
+audit/
+reproducibility/
+freeze_and_preregistration/
+
+# Research artifacts
+*.npz
+*.npy
+*.csv
+*.jsonl
+*.pth
+*.pt
+*.ckpt
+*.pkl
+*.pickle
+*.zip
+*.tar
+*.gz
+
+# Manuscript / bibliography
+*.tex
+*.bib
+*.pdf
+*.eps
+
+# Local / IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
