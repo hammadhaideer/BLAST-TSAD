@@ -1,70 +1,120 @@
 # BLAST protocol
 
-This document records the public protocol semantics for BLAST without publishing the manuscript, figures, or generated result package.
+This document records the protocol implemented by the public code companion for the ICASSP 2027 submission.
 
 ## 1. Causal score generation
 
-BLAST operates on a score stream produced causally from observations available up to the physical release time. The attribution rule must never be interpreted as future information becoming available early.
-
-For a detector endpoint score `q_e`, BLAST with delay `d` assigns that score to event time
+For an endpoint score `q_e`, BLAST with non-negative delay `d` assigns
 
 ```text
-t = e - d
+s_d(t) = q_(t+d)
 ```
 
-while the supporting evidence is still available only at release time
+while the evidence becomes available only at
 
 ```text
 r_d(t) = t + d.
 ```
 
-Therefore:
+Consequently:
 
 - `d = 0` is endpoint assignment;
 - `d > 0` is bounded retrospective attribution;
 - BLAST changes timestamp assignment only;
-- BLAST does not imply earlier computation, earlier alarms, or earlier intervention.
+- no future observation is used before its release time;
+- BLAST does not claim earlier computation, earlier alarms, or earlier intervention.
 
-## 2. Primary score stream
+## 2. Primary causal score stream
 
-The frozen BLAST study uses a trailing sample-standard-deviation score with window length
+The primary score is a trailing sample standard deviation with
 
 ```text
 W = 256
 ```
 
-for the primary development and confirmation protocol.
+and `ddof=1`.
 
-For multivariate data, channel normalization is fitted only on the training prefix before scoring. The frozen implementation uses robust prefix statistics and does not inspect labels during score generation.
+For multivariate M70 series, each channel is normalized using statistics fitted only on the training prefix:
 
-## 3. Development selection
+1. per-channel median;
+2. `1.4826 * MAD` scale;
+3. sample-standard-deviation fallback when MAD is unusable;
+4. scale `1.0` fallback if both are unusable.
 
-The U237 development cohort is used to evaluate a fixed delay grid and choose a bounded-latency operating point. The selection decision is made on development data only.
+The scalar endpoint score is the mean of the per-channel trailing standard deviations.
 
-The development cohort file is tracked under `configs/` in the current public snapshot.
+## 3. U237 development selection
 
-The operating-point selection protocol is frozen before the independent M70 confirmation step.
+U237 is the development cohort. Evaluation begins at zero-based raw index
 
-## 4. M70 confirmation
+```text
+767
+```
 
-M70 score generation is performed before confirmatory label evaluation. The scorer intentionally treats the label field as unavailable during score construction.
+The fixed delay grid is
 
-The M70 analysis then evaluates the already generated score artifacts using the frozen delay selected during development.
+```text
+D = {0, 32, 64, 96, 127}
+```
 
-The confirmation stage must not search for a new delay or retune the detector on M70 labels.
+and the low-latency candidate set is
 
-## 5. Metrics
+```text
+{32, 64}.
+```
 
-The primary paper metric is VUS-PR, evaluated with the pinned `vus` package used by the frozen study. Secondary metrics are treated as post-freeze robustness checks rather than as criteria for choosing the operating point.
+For a candidate delay `d`, the development gates versus `d=0` are:
 
-## 6. Boundary handling
+- mean paired VUS-PR gain at least `0.015`;
+- median paired gain greater than `0`;
+- strict win fraction at least `0.58`;
+- two-sided Wilcoxon signed-rank `p < 0.01`.
 
-The frozen implementation stores full-length score arrays for downstream evaluation. The final manuscript distinguishes the formal valid support of bounded attribution from implementation-level boundary padding. A separate common-support sensitivity analysis was performed after the primary result was frozen.
+The operating point is the **smallest passing low-latency delay**. The rule is a bounded-latency operating-point rule, not a search for the metric-maximizing delay.
 
-## 7. Cross-detector transfer
+## 4. Frozen M70 confirmation
 
-A frozen-delay transfer check is used to test whether the selected attribution delay generalizes automatically to another causal score stream. This is a transfer test, not a second tuning stage.
+The development-selected delay is frozen before M70 confirmation.
 
-## 8. Public-release scope
+M70 processing is deliberately split into two stages.
 
-This repository intentionally excludes generated result files, figures, manuscript source, raw datasets, model checkpoints, and the internal audit archive. Those exclusions do not change the protocol above.
+### Stage A — label-free score generation
+
+`score_m70_label_free.py`:
+
+- reads feature columns only;
+- keeps the final CSV label field opaque at byte level;
+- fits normalization on the training prefix only;
+- computes the causal endpoint score;
+- stores `d=0` and frozen-delay score arrays;
+- computes no anomaly metric.
+
+### Stage B — confirmatory evaluation
+
+`evaluate_m70_confirmatory.py` then reads labels and evaluates the already generated score artifacts. It does not search for a new delay and does not retune the score function.
+
+## 5. Primary metric
+
+The primary metric is VUS-PR from the pinned `vus==0.0.6` package.
+
+For each entity, the evaluation buffer is
+
+```text
+L_e = max(1, round(median ground-truth anomaly-segment length)).
+```
+
+The public metric wrapper has no pointwise fallback: if the official VUS implementation cannot run, evaluation fails explicitly.
+
+## 6. Full-length storage and formal support
+
+The frozen pipeline stores full-length test arrays. For `d>0`, entries at the final `d` event timestamps do not have corresponding evidence inside the available sequence and are padded in the stored array.
+
+The method's formal support is the validity mask returned by `blast.core.make_test_scores`. The public implementation also provides `common_support_pair` so matched-support sensitivity checks can explicitly exclude the invalid right boundary from both conditions.
+
+## 7. Cross-detector interpretation
+
+A delay selected on one causal score stream is not assumed to improve every detector. Any transfer experiment is interpreted as a transfer check, not as a second tuning stage.
+
+## 8. Public-release boundary
+
+The repository publishes method code, protocol, cohort manifests, environment pins, tests, and portable runners. It intentionally does not publish the manuscript, figures, generated paper results, pointwise score archives, raw datasets, model checkpoints, or the private audit bundle.
