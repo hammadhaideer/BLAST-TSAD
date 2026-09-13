@@ -1,13 +1,15 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the BLAST paper and this repository."
+message: "If you use this software, please cite the BLAST manuscript and this repository."
 title: "BLAST-TSAD"
 type: software
-version: "0.1.0"
+version: "1.0.0"
 date-released: "2026-09-13"
 repository-code: "https://github.com/hammadhaideer/BLAST-TSAD"
+license: MIT
 authors:
   - family-names: "Haider"
     given-names: "Hammad Ali"
+    orcid: "https://orcid.org/0009-0006-5678-9954"
   - family-names: "Zheng"
     given-names: "Panpan"
   - family-names: "Pietroń"
@@ -26,4 +28,4 @@ preferred-citation:
       given-names: "Marcin"
     - family-names: "Corizzo"
       given-names: "Roberto"
-  notes: "Manuscript in preparation for ICASSP 2027; update this record after final bibliographic assignment."
+  notes: "Submitted to ICASSP 2027. Proceedings metadata will be added if/when assigned."
