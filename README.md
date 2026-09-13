@@ -1,32 +1,44 @@
-# BLAST-TSAD
+<div align="center">
 
-**BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**
+# BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies
+
+**Official implementation for the ICASSP 2027 submission**
+
+Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹
+
+¹ Xinjiang University · ² AGH University of Krakow · ³ American University
 
 [![CI](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml/badge.svg)](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Paper](https://img.shields.io/badge/Paper-ICASSP%202027%20Submission-8A2BE2.svg)](#citation)
 
-Public code companion for the paper **“BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies,” submitted to ICASSP 2027**.
+</div>
 
-BLAST is a causal score-attribution framework for streaming time-series anomaly detection. It separates the timestamp an anomaly score describes from the later time at which the causal evidence supporting that attribution becomes available.
+## Overview
 
-For an endpoint score \(q_e\) and a non-negative bounded delay \(d\), BLAST attributes
+**BLAST** is a causal score-attribution framework for streaming time-series anomaly detection. It addresses a simple but important timing question: a causal detector may only accumulate enough evidence for an event *after* the event begins, so the time described by a score and the time at which that score becomes available need not be the same.
 
-\[
-s_d(t) = q_{t+d},
-\]
-
-while the evidence is available only at release time
+For a causal endpoint score \(q_e\) and a non-negative delay \(d\), BLAST defines
 
 \[
-r_d(t) = t+d.
+s_d(t)=q_{t+d}, \qquad r_d(t)=t+d,
 \]
 
-BLAST therefore changes **timestamp attribution only**. It does not retrain the detector, alter the underlying endpoint score stream, use future information before release, or claim earlier alarms or faster intervention.
+where \(s_d(t)\) is the score attributed to timestamp \(t\), while \(r_d(t)\) records when the supporting evidence is actually available.
 
-> **Paper status:** submitted to ICASSP 2027.
->
-> **Release status:** stable public code companion, version 1.0.0. Generated paper results, figures, manuscript files, raw datasets, checkpoints, and the private frozen audit bundle are intentionally not published here.
+> **BLAST changes score attribution, not evidence availability.** A positive delay enables retrospective localization under an explicit latency budget; it does not make the score available earlier, retrain the detector, or change the underlying causal score stream.
+
+### Highlights
+
+- **Causal by construction** — every score is computed only from observations available at its declared release time.
+- **Bounded-latency attribution** — event attribution time and evidence-availability time are represented explicitly.
+- **Detector-preserving** — BLAST changes timestamp assignment while leaving score generation and detector parameters unchanged.
+- **Frozen development-to-confirmation protocol** — the operating delay is selected on development data and transferred unchanged to independent confirmation.
+- **Label-free confirmatory scoring** — confirmation scores are generated before labels are used for evaluation.
+- **Official VUS-PR evaluation** — the public implementation uses the pinned VUS metric implementation and the same per-entity tolerance definition used by the study.
+
+**Code:** <https://github.com/hammadhaideer/BLAST-TSAD>
 
 ## What is included
 
