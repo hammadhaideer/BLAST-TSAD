@@ -3,10 +3,16 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
 .venv/
 venv/
 
-# Private research material
+# Local datasets and generated experiment outputs
 data/
 results/
 figures/
@@ -16,7 +22,7 @@ audit/
 reproducibility/
 freeze_and_preregistration/
 
-# Research artifacts
+# Large/generated research artifacts
 *.npz
 *.npy
 *.csv
@@ -30,13 +36,13 @@ freeze_and_preregistration/
 *.tar
 *.gz
 
-# Manuscript / bibliography
+# Manuscript / bibliography artifacts
 *.tex
 *.bib
 *.pdf
 *.eps
 
-# Local / IDE
+# Local / IDE / OS
 .vscode/
 .idea/
 .DS_Store
