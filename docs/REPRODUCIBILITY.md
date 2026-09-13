@@ -1,10 +1,10 @@
 # Reproducibility
 
-This document describes the public reproduction surface of the BLAST code companion.
+This repository is the stable public code companion for the BLAST paper submitted to ICASSP 2027.
 
-## Reference software environment
+## Reference environment
 
-The frozen study was executed with:
+The submitted study used:
 
 ```text
 Python          3.11
@@ -20,40 +20,84 @@ Create the public environment with:
 ```bash
 conda env create -f environment.yml
 conda activate blast-tsad
+python -m pip install -e .
 ```
 
 or:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
+
+## Repository verification
+
+Install the test dependency and run:
+
+```bash
+python -m pip install pytest
+pytest
+python examples/minimal_example.py
+```
+
+The same checks run automatically in GitHub Actions.
 
 ## Data preparation
 
-Obtain the benchmark archives independently and place them as described in [`DATA.md`](DATA.md).
+Obtain TSB-AD independently and place the two archives as documented in [`DATA.md`](DATA.md). For strict reproduction, verify the dataset and cohort SHA256 values listed there.
 
-## Current public execution surface
+## Public experiment sequence
 
-The current public snapshot exposes the M70 label-free scorer and confirmatory analysis scripts. These scripts preserve the frozen protocol semantics, including the distinction between score generation and confirmatory label evaluation.
+### U237 development
 
-The scientific source-of-truth for the submitted study is a separately frozen audit bundle containing exact scripts, manifests, pointwise artifacts, environment records, and checksums. That archive is intentionally not published in this repository during manuscript preparation.
+```bash
+python scripts/select_u237_delay.py
+```
 
-## Why generated results are absent
+This computes the primary causal score, evaluates the frozen delay grid, applies the documented paired gates, and selects the smallest passing low-latency candidate.
 
-The repository intentionally does not track generated result tables, score arrays, figures, or manuscript text. This keeps the code companion separate from the paper's frozen evidence package and avoids treating committed output files as the source of truth.
+### M70 label-free scoring
 
-## Exact-reproduction status
+```bash
+python scripts/score_m70_label_free.py
+```
 
-The public repository is being brought into dependency closure from the frozen audit record. A release should be treated as **exactly reproducible** only when:
+This stage never converts or inspects label values. It writes local score artifacts under `results/m70_label_free/`.
 
-1. every imported local helper is present;
-2. all referenced freeze manifests are present;
-3. repository-relative paths resolve without machine-specific assumptions;
-4. the dataset archive checksums match the frozen record;
-5. the public verifier passes from a clean environment.
+### M70 confirmation
 
-Until those conditions are satisfied, use this repository as the public code companion rather than as the authoritative frozen evidence archive.
+```bash
+python scripts/evaluate_m70_confirmatory.py
+```
 
-## Integrity principle
+This stage reads labels only after the score package exists and evaluates the development-frozen delay without a new search.
 
-Scientific logic should not be rewritten merely to make the repository cleaner. Portability fixes may change paths or packaging, but they must not change detector scores, attribution semantics, cohort membership, frozen operating points, metric definitions, or statistical tests.
+## Generated outputs
+
+`results/` is ignored by Git. Numerical outputs are generated locally rather than committed to this public repository. This avoids conflating generated files with the implementation and keeps the repository free of manuscript-result disclosure.
+
+## Frozen evidence record
+
+Before submission, the study was frozen and audited in a separate evidence bundle containing:
+
+- exact experiment artifacts;
+- pointwise score arrays;
+- frozen protocol documents and hashes;
+- environment records;
+- manuscript snapshot;
+- post-freeze robustness and boundary-sensitivity artifacts.
+
+That audit bundle is intentionally not published here. The public repository exposes the method/protocol implementation needed to inspect and rerun the BLAST pipeline without distributing the paper's frozen result package.
+
+## Integrity rules
+
+A reproduction should not alter:
+
+- U237 or M70 cohort membership;
+- training-prefix boundaries;
+- `W=256` primary score window;
+- the frozen delay grid or selection rule;
+- the label-free/confirmatory separation;
+- VUS-PR metric semantics;
+- attribution-time versus release-time causality.
+
+Hardware-dependent runtime may vary; the method itself is CPU-compatible and does not require a GPU.
