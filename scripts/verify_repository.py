@@ -17,6 +17,8 @@ VERSION = "1.0.0"
 
 REQUIRED = [
     "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "pyproject.toml",
     "CITATION.cff",
     "LICENSE",
@@ -86,14 +88,14 @@ def require_in_order(text: str, items: list[str], source: str) -> None:
         missing = [item for item, pos in zip(items, positions) if pos < 0]
         raise SystemExit(f"{source}: missing author(s): {missing}")
     if positions != sorted(positions):
-        raise SystemExit(f"{source}: author order does not match submitted paper")
+        raise SystemExit(f"{source}: author order does not match the submission manuscript")
 
 
 def verify_metadata() -> None:
     for rel in METADATA_FILES:
         text = (ROOT / rel).read_text(encoding="utf-8")
         if PAPER_TITLE not in text:
-            raise SystemExit(f"{rel}: exact submitted paper title is missing")
+            raise SystemExit(f"{rel}: exact paper title is missing")
 
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
@@ -104,7 +106,7 @@ def verify_metadata() -> None:
     require_in_order(pyproject, AUTHOR_ORDER, "pyproject.toml")
 
     # CITATION.cff stores names as separate given/family fields, so enforce the
-    # submitted surname order there rather than searching for display strings.
+    # manuscript surname order rather than searching for display strings.
     require_in_order(citation, ['family-names: "Haider"', 'family-names: "Pietroń"', 'family-names: "Corizzo"', 'family-names: "Zheng"'], "CITATION.cff")
 
     if f'__version__ = "{VERSION}"' not in init_py:
