@@ -75,9 +75,11 @@ Those exclusions are deliberate and do not change the public method implementati
 ├── scripts/
 │   ├── select_u237_delay.py
 │   ├── score_m70_label_free.py
-│   └── evaluate_m70_confirmatory.py
+│   ├── evaluate_m70_confirmatory.py
+│   └── verify_repository.py
 ├── tests/
-│   └── test_core.py
+│   ├── test_core.py
+│   └── test_data.py
 ├── .github/workflows/ci.yml
 ├── CITATION.cff
 ├── LICENSE
@@ -115,6 +117,12 @@ python -m pip install -e .
 
 ## Quick verification
 
+Verify the public release invariants:
+
+```bash
+python scripts/verify_repository.py
+```
+
 Run the unit tests:
 
 ```bash
@@ -128,7 +136,7 @@ Run the synthetic method example:
 python examples/minimal_example.py
 ```
 
-The example contains no paper results; it only verifies attribution/release semantics.
+The example contains no paper results; it only verifies attribution/release semantics. These checks also run in GitHub Actions.
 
 ## Data preparation
 
