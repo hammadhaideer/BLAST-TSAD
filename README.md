@@ -1,112 +1,206 @@
 # BLAST-TSAD
 
-**Bounded-Latency Attribution of Streaming Time-Series Anomalies**
+**BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**
 
-BLAST is a causal score-attribution framework for streaming time-series anomaly detection. It separates the timestamp an anomaly score is intended to describe from the later time at which the evidence supporting that attribution becomes available.
+[![CI](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml/badge.svg)](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-The central design goal is simple: preserve causal information access while allowing a bounded amount of retrospective attribution. BLAST changes timestamp assignment only; it does not retrain the detector, alter the underlying score stream, or claim earlier alarm delivery.
+Public code companion for the paper **“BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies,” submitted to ICASSP 2027**.
 
-> **Paper status:** manuscript in preparation for ICASSP 2027.
+BLAST is a causal score-attribution framework for streaming time-series anomaly detection. It separates the timestamp an anomaly score describes from the later time at which the causal evidence supporting that attribution becomes available.
+
+For an endpoint score \(q_e\) and a non-negative bounded delay \(d\), BLAST attributes
+
+\[
+s_d(t) = q_{t+d},
+\]
+
+while the evidence is available only at release time
+
+\[
+r_d(t) = t+d.
+\]
+
+BLAST therefore changes **timestamp attribution only**. It does not retrain the detector, alter the underlying endpoint score stream, use future information before release, or claim earlier alarms or faster intervention.
+
+> **Paper status:** submitted to ICASSP 2027.
 >
-> **Repository status:** public code companion. The frozen experimental record is maintained separately from this repository. Manuscript files, figures, generated results, raw datasets, checkpoints, and internal audit artifacts are intentionally not tracked here.
+> **Release status:** stable public code companion, version 1.0.0. Generated paper results, figures, manuscript files, raw datasets, checkpoints, and the private frozen audit bundle are intentionally not published here.
 
-## Method at a glance
+## What is included
 
-For a causal detector score \(q_e\) released at endpoint \(e\), BLAST attributes the score to an earlier event time \(t=e-d\), where \(d\) is an explicitly bounded delay. The evidence remains available only at release time \(t+d\).
+This repository is complete for the public implementation/protocol scope of the submission:
 
-This distinction is important:
+- self-contained BLAST attribution implementation;
+- causal trailing sample-standard-deviation scoring used by the primary study;
+- training-prefix robust normalization used for the multivariate confirmation cohort;
+- official VUS-PR evaluation wrapper and per-entity buffer definition;
+- U237 development delay-selection runner;
+- label-free M70 score-generation runner;
+- frozen-delay M70 confirmatory evaluator;
+- frozen cohort membership files;
+- environment specifications, unit tests, CI, and reproducibility documentation.
 
-- **attribution time** describes which event timestamp receives the score;
-- **release time** describes when the causal evidence actually exists;
-- BLAST does **not** use future information before release;
-- BLAST does **not** claim faster computation, earlier alerts, or earlier intervention.
+Not included:
 
-The experimental protocol uses development data to select a bounded operating point and freezes that choice before independent confirmation.
-
-## Public repository scope
-
-Included here:
-
-- core BLAST scoring and confirmatory-analysis scripts;
-- frozen cohort configuration files;
-- environment/dependency specifications;
-- protocol and data-layout documentation;
-- software citation metadata.
-
-Intentionally excluded:
-
-- manuscript source and submitted PDF;
-- figures and paper tables;
-- generated numerical results;
-- pointwise/intermediate score arrays;
+- manuscript source or submitted PDF;
+- paper figures and tables;
+- generated numerical result files;
+- pointwise score artifacts;
 - raw benchmark datasets;
-- model checkpoints and caches;
-- private machine paths and internal audit material.
+- model checkpoints/caches;
+- private audit/provenance bundle.
 
-The exclusion of generated outputs is deliberate: this repository is intended to expose the implementation and protocol without publishing the manuscript or its result package before the submission workflow is complete.
+Those exclusions are deliberate and do not change the public method implementation or protocol.
 
 ## Repository layout
 
 ```text
 .
-├── configs/                         frozen cohort lists
+├── blast/
+│   ├── core.py                  BLAST attribution and causal score construction
+│   ├── data.py                  TSB-AD readers and label-free data access
+│   └── metrics.py               VUS-PR and paired evaluation helpers
+├── configs/
+│   ├── rangerank_tsbad_confirmatory_237.txt
+│   └── rangerank_tsbad_m_confirmatory_70.txt
 ├── docs/
-│   ├── DATA.md                      expected dataset layout
-│   ├── PROTOCOL.md                  BLAST protocol and causal semantics
-│   ├── REPRODUCIBILITY.md           environment and execution notes
-│   └── RELEASE_STATUS.md            public-release status
+│   ├── DATA.md
+│   ├── PROTOCOL.md
+│   ├── REPRODUCIBILITY.md
+│   └── RELEASE_STATUS.md
+├── examples/
+│   └── minimal_example.py
 ├── scripts/
-│   ├── analyze_latency_alignment_tsbadm_confirmatory.py
-│   └── score_latency_alignment_tsbadm_labelfree.py
+│   ├── select_u237_delay.py
+│   ├── score_m70_label_free.py
+│   └── evaluate_m70_confirmatory.py
+├── tests/
+│   └── test_core.py
+├── .github/workflows/ci.yml
 ├── CITATION.cff
+├── LICENSE
 ├── environment.yml
+├── pyproject.toml
 └── requirements.txt
 ```
 
 ## Environment
 
-Reference environment used for the frozen study:
+The reference software stack used for the submitted study is:
 
-- Python 3.11
-- NumPy 2.4.4
-- SciPy 1.17.1
-- pandas 3.0.3
-- scikit-learn 1.9.0
-- `vus` 0.0.6
+```text
+Python          3.11
+NumPy           2.4.4
+SciPy           1.17.1
+pandas          3.0.3
+scikit-learn    1.9.0
+vus             0.0.6
+```
 
-Create the lightweight public environment with Conda:
+Create the environment with Conda:
 
 ```bash
 conda env create -f environment.yml
 conda activate blast-tsad
+python -m pip install -e .
 ```
 
-or install the Python dependencies directly:
+or with pip:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
-See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the exact release status and dependency notes.
+## Quick verification
 
-## Data
+Run the unit tests:
 
-BLAST uses the public TSB-AD benchmark archives in the frozen study. The datasets are **not redistributed** in this repository. Place locally obtained benchmark archives under the layout documented in [`docs/DATA.md`](docs/DATA.md).
+```bash
+python -m pip install pytest
+pytest
+```
 
-## Protocol
+Run the synthetic method example:
 
-The public protocol documentation records the separation between development selection and frozen confirmation, the bounded-delay semantics, and the label-free M70 scoring requirement. See [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+```bash
+python examples/minimal_example.py
+```
+
+The example contains no paper results; it only verifies attribution/release semantics.
+
+## Data preparation
+
+The study uses the public TSB-AD univariate and multivariate archives. The datasets are not redistributed.
+
+Place independently obtained archives at:
+
+```text
+data/
+└── tsb_ad/
+    ├── TSB-AD-U.zip
+    └── TSB-AD-M.zip
+```
+
+See [`docs/DATA.md`](docs/DATA.md) for cohort and checksum information.
+
+## Reproduce the public protocol
+
+### 1. U237 development selection
+
+```bash
+python scripts/select_u237_delay.py
+```
+
+This evaluates the frozen delay grid and applies the development-only operating-point rule documented in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+
+### 2. M70 label-free score generation
+
+```bash
+python scripts/score_m70_label_free.py
+```
+
+The scorer reads feature columns while leaving the label field opaque. It fits normalization on the training prefix only and writes local score artifacts under `results/`.
+
+### 3. M70 confirmation
+
+```bash
+python scripts/evaluate_m70_confirmatory.py
+```
+
+Only after label-free scores exist does this stage read M70 labels and evaluate the already frozen delay. It does not search for a new delay or retune the score function.
+
+Generated outputs are intentionally ignored by Git.
+
+## Evaluation semantics
+
+The primary metric is **VUS-PR** from the pinned `vus` package. The per-entity buffer is
+
+\[
+L_e = \max\left(1,\operatorname{round}(\operatorname{median}\{\text{GT anomaly-run lengths}\})\right).
+\]
+
+The public wrapper raises if the official VUS implementation is unavailable instead of silently substituting a different metric.
+
+## Boundary convention
+
+For a delay \(d>0\), formal BLAST support contains only timestamps for which \(t+d\) exists. Full-length stored arrays use right-tail padding for compatibility with the frozen evaluation pipeline. The repository exposes both the formal validity mask and a common-support helper so boundary-sensitive analyses can explicitly exclude invalid tail positions.
+
+## Reproducibility and provenance
+
+The submitted paper was audited against a separately frozen evidence bundle containing scripts, result artifacts, manifests, hashes, environment records, and the manuscript snapshot. That private audit bundle is not part of this public repository.
+
+This repository is the stable public code companion. Scientific semantics, cohort membership, operating-point rules, metric definitions, and causal information-access constraints are documented in [`docs/PROTOCOL.md`](docs/PROTOCOL.md) and [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
 
 ## Citation
 
-If you use this repository, please cite the BLAST paper once a final bibliographic record is available. Software citation metadata is provided in [`CITATION.cff`](CITATION.cff).
+Until final proceedings metadata are available, cite the submitted manuscript and repository using [`CITATION.cff`](CITATION.cff). The citation record will require only bibliographic metadata updates if the paper is accepted; the code release itself is intended to remain stable.
 
 ## Code availability
-
-Public repository:
 
 <https://github.com/hammadhaideer/BLAST-TSAD>
 
 ## License
 
-A repository-wide software license will be added only after the final source-provenance audit is complete. Third-party datasets, metrics packages, models, and external implementations retain their own licenses and are not redistributed here.
+Code and documentation authored for this repository are released under the [MIT License](LICENSE). TSB-AD, underlying benchmark datasets, the `vus` package, and all other third-party software retain their original licenses and are not redistributed here.
