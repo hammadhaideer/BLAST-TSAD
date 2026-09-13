@@ -159,6 +159,8 @@ L_e = \max\left(1,\operatorname{round}(\operatorname{median}\{\text{ground-truth
 
 The public metric wrapper fails explicitly if the official VUS implementation is unavailable; it does not silently replace VUS-PR with a different metric.
 
+The broader M70 benchmark contains methods with different information-access assumptions. Their protocol categories and the pinned TSB-AD reference used by the submission are documented in [`docs/BASELINES.md`](docs/BASELINES.md); they should not be interpreted as strictly interchangeable causal competitors.
+
 ## Repository Structure
 
 <details>
@@ -172,6 +174,7 @@ BLAST-TSAD/
 │   └── metrics.py              # VUS-PR and paired statistics
 ├── configs/                    # frozen U237 and M70 cohort manifests
 ├── docs/
+│   ├── BASELINES.md
 │   ├── DATA.md
 │   ├── PROTOCOL.md
 │   ├── REPRODUCIBILITY.md
@@ -186,6 +189,7 @@ BLAST-TSAD/
 ├── tests/
 ├── .github/workflows/ci.yml
 ├── CITATION.cff
+├── LICENSE
 ├── environment.yml
 ├── pyproject.toml
 └── requirements.txt
@@ -197,6 +201,7 @@ BLAST-TSAD/
 
 - [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — causal semantics, score construction, delay selection, confirmation protocol, and metric definition.
 - [`docs/DATA.md`](docs/DATA.md) — TSB-AD layout, archive checksums, frozen cohort hashes, and label handling.
+- [`docs/BASELINES.md`](docs/BASELINES.md) — contextual baseline protocols, information-access categories, and pinned TSB-AD provenance.
 - [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — complete environment and rerun sequence.
 - [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md) — public release scope and stability policy.
 
