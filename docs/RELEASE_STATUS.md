@@ -25,7 +25,7 @@ The public scientific interface is considered stable for the submitted paper. Ve
 - benchmark/cohort SHA256 provenance checks;
 - an end-to-end paper-reproduction command and numerical result checker;
 - unit tests and GitHub Actions CI;
-- final manuscript result tables and paper-figure documentation assets;
+- final manuscript numerical result tables and browser-friendly documentation schematics;
 - citation, data, protocol, baseline, reproducibility, and release documentation.
 
 ### Not distributed in this repository
@@ -34,9 +34,10 @@ The public scientific interface is considered stable for the submitted paper. Ve
 - raw benchmark datasets;
 - generated per-series/pointwise result archives;
 - third-party model checkpoints or caches;
-- private audit/development records and preregistration files.
+- private audit/development records and preregistration files;
+- original manuscript figure files.
 
-The final paper figures are included only as documentation assets; they are not consumed by the experiment code and do not affect numerical reproduction.
+The SVGs under `assets/paper/` are explanatory repository figures derived from the frozen method semantics and reported results. They are not consumed by experiment code and do not affect numerical reproduction.
 
 ## Stability policy
 
