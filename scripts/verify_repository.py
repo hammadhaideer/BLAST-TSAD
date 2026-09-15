@@ -42,9 +42,9 @@ COHORT_HASHES = {
 }
 
 ASSET_HASHES = {
-    "assets/paper/figure1_attribution.svg": "fa6bbded6c58a53536641a48da040656cac41bcdf87fcf8ac7ac0c5168b13f7e",
-    "assets/paper/figure2_workflow.svg": "cb0906ad61f21c56020363501a10066da4897c7dcb4e22ec1fbb742d7109aab3",
-    "assets/paper/figure3_confirmation_summary.svg": "3fd7153efd0baec01916a739cc09263131e2de96bf08a3723fa7c3ae41664e02",
+    "assets/paper/figure1_attribution.svg": "cd8dc07b5d1e35e3217c2c5db61a9661ba28a0e9a0f296d48a3c126f844268bf",
+    "assets/paper/figure2_workflow.svg": "183064482e8a3e381446fde8b74580441de28e211ff0a3d3d5915a040b7d4ce3",
+    "assets/paper/figure3_confirmation_summary.svg": "7a706cf9fb3cfc7807a8ad58300eaca32846eb5ff5e2aa3303a9c6c509403ea0",
 }
 
 DATA_HASHES = {
