@@ -44,7 +44,7 @@ pytest
 python examples/minimal_example.py
 ```
 
-The verification script checks package/version metadata, author order, cohort hashes, required reproduction files, and the checksums of the paper-figure documentation assets. GitHub Actions executes the same code-level checks for pull requests and for `main`.
+The verification script checks package/version metadata, author order, cohort hashes, required reproduction files, and the checksums of the browser-friendly documentation figures. GitHub Actions executes the same code-level checks for pull requests and for `main`.
 
 ## 3. Prepare TSB-AD
 
@@ -173,6 +173,6 @@ The reference implementation is CPU-compatible and does not require a GPU. Runti
 
 ## 8. Scientific record and public scope
 
-The final values to reproduce are listed in [`RESULTS.md`](RESULTS.md), and the final paper figures are provided under [`../assets/paper/`](../assets/paper/) for visual reference. Those figures are documentation only and are not read by any experimental script.
+The final values to reproduce are listed in [`RESULTS.md`](RESULTS.md). Browser-friendly documentation schematics are provided under [`../assets/paper/`](../assets/paper/) to illustrate the frozen method semantics and headline results. The original manuscript figure files are not part of this code release. None of the documentation figures are read by experimental scripts or affect numerical reproduction.
 
 The submitted manuscript was additionally audited against a separately frozen private evidence bundle containing original experiment outputs, hashes, environment information, and preregistered/post-freeze checks. That private audit record is not required to rerun the public implementation and is not distributed here.
