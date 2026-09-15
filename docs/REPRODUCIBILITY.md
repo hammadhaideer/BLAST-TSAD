@@ -2,9 +2,11 @@
 
 This repository is the public implementation accompanying **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**, submitted to ICASSP 2027.
 
+The goal of this document is to make the manuscript's controlled BLAST experiment reproducible from the public TSB-AD archives without relying on hidden result files.
+
 ## 1. Reference environment
 
-The submitted study used:
+The reference software stack is:
 
 ```text
 Python          3.11
@@ -31,7 +33,7 @@ A pip-only installation is also supported:
 python -m pip install -e .
 ```
 
-## 2. Verify the repository
+## 2. Verify the code artifact
 
 Install the test dependency and run:
 
@@ -42,13 +44,50 @@ pytest
 python examples/minimal_example.py
 ```
 
-GitHub Actions executes the same verification path on every push and pull request to `main`.
+The verification script checks package/version metadata, author order, cohort hashes, required reproduction files, and the checksums of the paper-figure documentation assets. GitHub Actions executes the same code-level checks for pull requests and for `main`.
 
-## 3. Prepare the data
+## 3. Prepare TSB-AD
 
-Obtain the TSB-AD archives independently and place them as described in [`DATA.md`](DATA.md). For strict reproduction, verify the archive and cohort SHA256 values listed there.
+Obtain the public TSB-AD archives independently from the benchmark source and place them at:
 
-## 4. Run the submitted protocol
+```text
+data/
+└── tsb_ad/
+    ├── TSB-AD-U.zip
+    └── TSB-AD-M.zip
+```
+
+See [`DATA.md`](DATA.md) for the exact archive and cohort SHA256 values. Every experimental runner verifies the relevant hashes and aborts on a mismatch; silently running a different benchmark snapshot is intentionally disallowed.
+
+## 4. One-command manuscript reproduction
+
+After the two verified archives are in place, run:
+
+```bash
+python scripts/reproduce_paper.py
+```
+
+The command performs, in order:
+
+1. repository/provenance verification;
+2. the U237 development-only delay sweep and frozen selection;
+3. M70 label-free score generation;
+4. M70 confirmatory evaluation using the already frozen operating point;
+5. post-freeze AP, AUROC, VUS-ROC, and common-support checks;
+6. comparison of all generated manuscript numbers with the frozen ledger.
+
+A successful run ends with:
+
+```text
+BLAST_MANUSCRIPT_NUMBERS: PASS
+BLAST_PAPER_REPRODUCTION: PASS
+```
+
+By default the command removes an existing local `results/` directory before starting so that stale outputs cannot be mistaken for a fresh reproduction. Pass `--keep-results` only when you intentionally want the script to refuse to overwrite an existing result directory.
+
+## 5. Manual reproduction stages
+
+The same pipeline can be run step by step.
 
 ### U237 development selection
 
@@ -56,7 +95,7 @@ Obtain the TSB-AD archives independently and place them as described in [`DATA.m
 python scripts/select_u237_delay.py
 ```
 
-This stage computes the primary causal score stream, evaluates the frozen delay grid, applies the documented development gates, and selects the smallest eligible low-latency delay.
+This stage computes the raw univariate causal Std256 stream, evaluates the frozen delay grid `D={0,32,64,96,127}`, applies the five predeclared development gates, and selects the smallest passing low-latency candidate from `{32,64}`.
 
 ### M70 label-free scoring
 
@@ -64,7 +103,7 @@ This stage computes the primary causal score stream, evaluates the frozen delay 
 python scripts/score_m70_label_free.py
 ```
 
-This stage does not parse anomaly labels. It fits normalization only on each training prefix and writes local score artifacts to `results/m70_label_free/`.
+This stage parses feature columns while keeping the final CSV label field opaque, fits normalization only on each filename-defined training prefix, computes the fixed endpoint score stream, and writes a SHA256 manifest for the generated pointwise score package. No anomaly metric is computed here.
 
 ### M70 confirmation
 
@@ -72,27 +111,68 @@ This stage does not parse anomaly labels. It fits normalization only on each tra
 python scripts/evaluate_m70_confirmatory.py
 ```
 
-This stage reads labels only after the score package exists and evaluates the already frozen delay without a new delay search or score retuning.
+Before reading labels, this stage verifies the label-free summary, dataset/cohort provenance, and every score-artifact hash. It then evaluates the frozen `d*=32` configuration without another delay search or score retuning.
 
-## 5. Generated outputs
+### Post-freeze robustness
 
-All generated experiment outputs are written beneath `results/`, which is ignored by Git. The public repository contains the implementation, cohort manifests, environment pins, and rerun protocol rather than committed paper-result files.
+```bash
+python scripts/evaluate_postfreeze_robustness.py
+```
 
-## 6. Reproduction invariants
+This reproduces AP, AUROC, and VUS-ROC on both cohorts and the common-support boundary check obtained by removing the final 32 timestamps from both attribution arms.
+
+### Manuscript-number audit
+
+```bash
+python scripts/check_paper_results.py
+```
+
+This compares freshly generated outputs against the final numerical ledger documented in [`RESULTS.md`](RESULTS.md). The ledger is used only for verification; it is never used by score generation or metric computation.
+
+## 6. Generated outputs
+
+All experiment outputs are written beneath `results/`, which is ignored by Git. Important generated files include:
+
+```text
+results/
+├── u237_delay_selection/summary.json
+├── m70_label_free/
+│   ├── label_free_summary.json
+│   ├── pointwise_manifest.sha256
+│   └── *.npz
+├── m70_confirmatory/
+│   ├── summary.json
+│   └── per_series_70.csv
+└── postfreeze_robustness/
+    ├── summary.json
+    ├── u237_full.csv
+    ├── u237_common_support.csv
+    ├── m70_full.csv
+    └── m70_common_support.csv
+```
+
+Generated outputs are intentionally not committed to the repository. This prevents cached numbers from being confused with independently recomputed results.
+
+## 7. Frozen reproduction invariants
 
 For the submitted protocol, do not change:
 
 - U237 or M70 cohort membership;
-- M70 training-prefix boundaries;
-- primary score window `W = 256`;
-- delay grid or low-latency candidate set;
-- development selection thresholds;
+- the U237 evaluation start (zero-based index 767);
+- M70 filename-defined training-prefix boundaries;
+- the primary window `W=256`;
+- the delay grid or low-latency candidate set;
+- the five development-selection gates;
+- M70 prefix-normalization semantics;
 - label-free scoring / confirmatory evaluation separation;
-- VUS-PR semantics and per-entity buffer definition;
+- VUS-PR semantics and per-entity temporal buffer definition;
+- right-boundary handling;
 - attribution-time versus evidence-availability semantics.
 
-Hardware-dependent runtime may vary. The BLAST reference implementation is CPU-compatible and does not require a GPU.
+The reference implementation is CPU-compatible and does not require a GPU. Runtime depends on CPU, storage, and the VUS implementation.
 
-## 7. Scientific record
+## 8. Scientific record and public scope
 
-The submitted manuscript was audited against a separately frozen internal evidence record containing exact experiment outputs, hashes, environment information, and post-freeze checks. That record is not required to inspect or rerun the public implementation and is not distributed in this repository.
+The final values to reproduce are listed in [`RESULTS.md`](RESULTS.md), and the final paper figures are provided under [`../assets/paper/`](../assets/paper/) for visual reference. Those figures are documentation only and are not read by any experimental script.
+
+The submitted manuscript was additionally audited against a separately frozen private evidence bundle containing original experiment outputs, hashes, environment information, and preregistered/post-freeze checks. That private audit record is not required to rerun the public implementation and is not distributed here.
