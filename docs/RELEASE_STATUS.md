@@ -6,11 +6,11 @@
 
 This repository is the public code and reproducibility companion for that submission. Repository availability does **not** imply conference acceptance or publication.
 
-## Release
+## Version
 
-**BLAST-TSAD v1.0.1** — 2026-09-16
+**BLAST-TSAD v1.0.2** — 2026-09-16
 
-The public scientific interface is considered stable for the submitted paper. Version 1.0.1 hardens provenance and reproduction while preserving the frozen scientific protocol and manuscript results.
+The public scientific interface is considered stable for the submitted paper. Version 1.0.2 preserves the frozen scientific protocol and manuscript results while clarifying the strictly confirmatory role of M70 and improving public reproducibility documentation.
 
 ### Included
 
@@ -27,6 +27,10 @@ The public scientific interface is considered stable for the submitted paper. Ve
 - unit tests and GitHub Actions CI;
 - final manuscript numerical result tables and browser-friendly documentation schematics;
 - citation, data, protocol, baseline, reproducibility, and release documentation.
+
+### Confirmatory semantics
+
+M70 is a frozen confirmation cohort, not a second model-selection stage. The public evaluator reports the already-fixed `d*=32` comparison and associated statistics without any M70 pass/fail threshold, alternative-delay search, or retuning.
 
 ### Not distributed in this repository
 
