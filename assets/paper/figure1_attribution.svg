@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
+  <style>
+    .t{font:22px Arial,sans-serif;fill:#111}.s{font:18px Arial,sans-serif;fill:#333}.h{font:bold 26px Arial,sans-serif;fill:#111}.b{fill:#f7f7f7;stroke:#555;stroke-width:2}.p{fill:#eef4ff;stroke:#3b6db5;stroke-width:2}.a{fill:#fff4e6;stroke:#d97706;stroke-width:2}.line{stroke:#333;stroke-width:3}.dash{stroke:#777;stroke-width:2;stroke-dasharray:8 7}.arrow{marker-end:url(#m)}
+  </style>
+  <defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#333"/></marker></defs>
+  <text x="550" y="38" text-anchor="middle" class="h">Endpoint assignment vs. BLAST attribution</text>
+  <rect x="40" y="70" width="480" height="390" rx="16" class="b"/>
+  <rect x="580" y="70" width="480" height="390" rx="16" class="b"/>
+  <text x="280" y="112" text-anchor="middle" class="h">(a) Endpoint assignment, d = 0</text>
+  <text x="820" y="112" text-anchor="middle" class="h">(b) BLAST attribution, d &gt; 0</text>
+  <line x1="105" y1="300" x2="455" y2="300" class="line arrow"/>
+  <line x1="645" y1="300" x2="995" y2="300" class="line arrow"/>
+  <line x1="255" y1="165" x2="255" y2="350" class="dash"/>
+  <line x1="740" y1="165" x2="740" y2="350" class="dash"/>
+  <line x1="900" y1="165" x2="900" y2="350" class="dash"/>
+  <rect x="150" y="185" width="105" height="52" rx="8" class="p"/><text x="202" y="218" text-anchor="middle" class="s">causal window</text>
+  <rect x="635" y="185" width="265" height="52" rx="8" class="p"/><text x="768" y="218" text-anchor="middle" class="s">x[t+d-W+1 : t+d]</text>
+  <circle cx="255" cy="300" r="11" fill="#3b6db5"/><text x="255" y="382" text-anchor="middle" class="t">t = e</text>
+  <rect x="185" y="395" width="140" height="45" rx="8" class="p"/><text x="255" y="425" text-anchor="middle" class="s">q_t available</text>
+  <circle cx="740" cy="300" r="11" fill="#d97706"/><circle cx="900" cy="300" r="11" fill="#3b6db5"/>
+  <text x="740" y="382" text-anchor="middle" class="t">attribution: t</text>
+  <text x="900" y="382" text-anchor="middle" class="t">availability: t+d</text>
+  <rect x="655" y="395" width="170" height="45" rx="8" class="a"/><text x="740" y="425" text-anchor="middle" class="s">score assigned here</text>
+  <rect x="830" y="395" width="140" height="45" rx="8" class="p"/><text x="900" y="425" text-anchor="middle" class="s">q_{t+d} exists</text>
+  <line x1="752" y1="335" x2="888" y2="335" class="line arrow"/>
+  <text x="820" y="327" text-anchor="middle" class="s">evidence delay d</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="0 0 1400 520">
+  <style>
+    .h{font:bold 28px Arial,sans-serif;fill:#111}.t{font:21px Arial,sans-serif;fill:#111}.s{font:18px Arial,sans-serif;fill:#333}.box{fill:#f8fafc;stroke:#475569;stroke-width:2}.blue{fill:#eff6ff;stroke:#2563eb;stroke-width:2}.orange{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.green{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.arrow{stroke:#334155;stroke-width:3;marker-end:url(#m)}
+  </style>
+  <defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
+  <text x="700" y="38" text-anchor="middle" class="h">BLAST reproducible workflow</text>
+  <rect x="35" y="80" width="390" height="350" rx="18" class="box"/><text x="230" y="120" text-anchor="middle" class="h">A. Fixed causal scoring</text>
+  <rect x="90" y="170" width="280" height="70" rx="12" class="blue"/><text x="230" y="200" text-anchor="middle" class="t">Observed stream through e</text><text x="230" y="225" text-anchor="middle" class="s">x[e-W+1 : e], W = 256</text>
+  <line x1="230" y1="240" x2="230" y2="285" class="arrow"/>
+  <rect x="90" y="285" width="280" height="70" rx="12" class="blue"/><text x="230" y="317" text-anchor="middle" class="t">Endpoint score q_e</text><text x="230" y="342" text-anchor="middle" class="s">trailing sample std, ddof = 1</text>
+  <text x="230" y="400" text-anchor="middle" class="s">No future observations; detector unchanged</text>
+
+  <rect x="505" y="80" width="390" height="350" rx="18" class="box"/><text x="700" y="120" text-anchor="middle" class="h">B. Bounded attribution</text>
+  <rect x="560" y="180" width="280" height="62" rx="12" class="orange"/><text x="700" y="218" text-anchor="middle" class="t">Assign q_e to t = e - d</text>
+  <line x1="700" y1="242" x2="700" y2="286" class="arrow"/>
+  <rect x="560" y="286" width="280" height="62" rx="12" class="green"/><text x="700" y="324" text-anchor="middle" class="t">Availability remains e = t + d</text>
+  <text x="700" y="390" text-anchor="middle" class="s">d = 0: endpoint assignment</text><text x="700" y="416" text-anchor="middle" class="s">d &gt; 0: retrospective localization only</text>
+
+  <rect x="975" y="80" width="390" height="350" rx="18" class="box"/><text x="1170" y="120" text-anchor="middle" class="h">C. Frozen protocol</text>
+  <rect x="1030" y="160" width="280" height="65" rx="12" class="blue"/><text x="1170" y="190" text-anchor="middle" class="t">U237 development</text><text x="1170" y="214" text-anchor="middle" class="s">D = {0,32,64,96,127}</text>
+  <line x1="1170" y1="225" x2="1170" y2="267" class="arrow"/>
+  <rect x="1030" y="267" width="280" height="65" rx="12" class="orange"/><text x="1170" y="297" text-anchor="middle" class="t">Select smallest qualifying</text><text x="1170" y="321" text-anchor="middle" class="s">low-latency d*: 32</text>
+  <line x1="1170" y1="332" x2="1170" y2="374" class="arrow"/>
+  <rect x="1030" y="374" width="280" height="42" rx="12" class="green"/><text x="1170" y="401" text-anchor="middle" class="t">M70 confirmation, no retuning</text>
+  <line x1="425" y1="255" x2="505" y2="255" class="arrow"/>
+  <line x1="895" y1="255" x2="975" y2="255" class="arrow"/>
+</svg>

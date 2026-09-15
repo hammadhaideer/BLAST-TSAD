@@ -2,6 +2,31 @@
 
 All notable public changes to BLAST-TSAD are documented here.
 
+Paper: **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**.
+
+## v1.0.1 — 2026-09-16
+
+Reproducibility-hardening release for the ICASSP 2027 submission.
+
+### Correctness and provenance
+
+- aligned the public M70 normalization with the frozen study, including the exact `64 * eps_float64 * max(1, |median|)` numerical floor before the sample-standard-deviation fallback;
+- made the frozen VUS configuration explicit (`vus==0.0.6`, `version="opt"`, `thre=250`) while preserving the audited study semantics;
+- added SHA256 verification for the two benchmark archives and both frozen cohort manifests;
+- strengthened the label-free M70 handoff with a pointwise-score manifest that is verified before confirmatory labels are read;
+- removed stale HSF transfer material from the public submission-facing documentation.
+
+### Reproduction and verification
+
+- added `scripts/reproduce_paper.py` for the end-to-end public reproduction path;
+- added post-freeze AP, AUROC, VUS-ROC, and common-support robustness reproduction;
+- added `scripts/check_paper_results.py` to compare freshly generated outputs with the frozen manuscript-number ledger;
+- added metric/provenance tests and expanded repository invariant checks;
+- added `docs/RESULTS.md` with the final manuscript numerical tables and interpretation notes;
+- added browser-friendly SVG documentation figures for the method, workflow, and confirmation summary.
+
+No manuscript result or scientific claim is changed by this release; the update makes the public implementation match the frozen audited protocol more exactly.
+
 ## v1.0.0 — 2026-09-13
 
 Initial stable public research-code release accompanying the ICASSP 2027 submission.
@@ -21,4 +46,4 @@ Initial stable public research-code release accompanying the ICASSP 2027 submiss
 
 ### Public release scope
 
-Raw datasets, generated numerical results, pointwise score archives, manuscript files, paper figures/tables, checkpoints, and the private frozen audit bundle are intentionally excluded from the public repository.
+Raw datasets, generated pointwise outputs, manuscript files, checkpoints, and the private frozen audit bundle are intentionally excluded from the public repository.

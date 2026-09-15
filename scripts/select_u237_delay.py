@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Run the BLAST U237 development delay-selection protocol.
-
-Generated outputs are written locally under ``results/`` and are ignored by
-Git.  The script does not contain paper result values.
-"""
+"""Run the frozen BLAST U237 development delay-selection protocol."""
 
 from __future__ import annotations
 
@@ -17,9 +13,10 @@ import numpy as np
 from blast.core import make_test_scores, scalar_endpoint_score
 from blast.data import load_cohort, read_features_label_free, read_labels
 from blast.metrics import official_vus_pr, paired_summary
+from blast.provenance import TSB_AD_U_SHA256, U237_COHORT_SHA256, require_sha256
 
 WINDOW = 256
-COMMON_START = 767  # zero-based index in the raw series
+COMMON_START = 767
 DELAYS = (0, 32, 64, 96, 127)
 LOW_LATENCY = (32, 64)
 MIN_GAIN = 0.015
@@ -34,12 +31,13 @@ def main() -> None:
     ap.add_argument("--out", default="results/u237_delay_selection/summary.json")
     args = ap.parse_args()
 
+    data_sha = require_sha256(args.data, TSB_AD_U_SHA256, "TSB-AD-U archive")
+    cohort_sha = require_sha256(args.cohort, U237_COHORT_SHA256, "U237 cohort")
     cohort = load_cohort(args.cohort)
     if len(cohort) != 237:
         raise RuntimeError(f"expected 237 U237 members, found {len(cohort)}")
 
     per_delay: dict[int, list[float]] = {d: [] for d in DELAYS}
-
     with zipfile.ZipFile(args.data) as zf:
         for name in cohort:
             x, _ = read_features_label_free(zf, "TSB-AD-U", name)
@@ -50,23 +48,25 @@ def main() -> None:
                 raise RuntimeError(f"{name}: feature/label length mismatch")
             if len(x) <= COMMON_START + max(DELAYS):
                 raise RuntimeError(f"{name}: series too short for frozen support")
-
             endpoint = scalar_endpoint_score(x[:, 0], WINDOW)
             y = labels[COMMON_START:]
             for d in DELAYS:
-                scores, _valid = make_test_scores(endpoint, COMMON_START, d)
+                scores, _ = make_test_scores(endpoint, COMMON_START, d)
                 per_delay[d].append(official_vus_pr(y, scores))
 
     base = np.asarray(per_delay[0], dtype=np.float64)
+    baseline_macro = float(base.mean())
     table: dict[str, dict] = {}
     for d in DELAYS:
         values = np.asarray(per_delay[d], dtype=np.float64)
-        row = {"delay": d, "macro_vus_pr": float(values.mean())}
+        macro = float(values.mean())
+        row: dict[str, object] = {"delay": d, "macro_vus_pr": macro}
         if d != 0:
             paired = paired_summary(values, base)
-            gain = float(values.mean() - base.mean())
+            gain = float(macro - baseline_macro)
             gates = {
-                "mean_gain_ge_0.015": gain >= MIN_GAIN,
+                "macro_superiority": macro > baseline_macro,
+                "absolute_gain_ge_0.015": gain >= MIN_GAIN,
                 "median_gain_gt_0": paired["median_delta"] > 0.0,
                 "win_fraction_ge_0.58": paired["strict_win_fraction"] >= MIN_WIN,
                 "wilcoxon_p_lt_0.01": paired["wilcoxon_p"] < ALPHA,
@@ -74,9 +74,8 @@ def main() -> None:
             row.update({"gain_vs_d0": gain, "paired": paired, "gates": gates, "passes": bool(all(gates.values()))})
         table[str(d)] = row
 
-    eligible = [d for d in LOW_LATENCY if table[str(d)]["passes"]]
+    eligible = [d for d in LOW_LATENCY if bool(table[str(d)]["passes"])]
     selected = min(eligible) if eligible else None
-
     summary = {
         "status": "COMPLETE",
         "series": len(cohort),
@@ -86,9 +85,9 @@ def main() -> None:
         "low_latency_candidates": list(LOW_LATENCY),
         "selection_rule": "smallest passing low-latency delay",
         "selected_delay": selected,
+        "provenance": {"data_sha256": data_sha, "cohort_sha256": cohort_sha},
         "by_delay": table,
     }
-
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")

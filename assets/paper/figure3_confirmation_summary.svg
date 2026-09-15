@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430">
+  <style>.h{font:bold 28px Arial,sans-serif;fill:#111}.t{font:21px Arial,sans-serif;fill:#111}.n{font:bold 34px Arial,sans-serif;fill:#14532d}.box{fill:#f8fafc;stroke:#64748b;stroke-width:2}.good{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.note{font:17px Arial,sans-serif;fill:#475569}</style>
+  <text x="500" y="42" text-anchor="middle" class="h">Frozen M70 confirmation summary</text>
+  <rect x="55" y="90" width="270" height="135" rx="16" class="box"/><text x="190" y="125" text-anchor="middle" class="t">Macro VUS-PR</text><text x="190" y="173" text-anchor="middle" class="n">0.1705 → 0.2089</text><text x="190" y="204" text-anchor="middle" class="note">+22.6% relative, no retuning</text>
+  <rect x="365" y="90" width="270" height="135" rx="16" class="good"/><text x="500" y="125" text-anchor="middle" class="t">Paired wins</text><text x="500" y="173" text-anchor="middle" class="n">54 / 70</text><text x="500" y="204" text-anchor="middle" class="note">Wilcoxon p = 2.65×10⁻⁷</text>
+  <rect x="675" y="90" width="270" height="135" rx="16" class="good"/><text x="810" y="125" text-anchor="middle" class="t">Family-balanced VUS-PR</text><text x="810" y="173" text-anchor="middle" class="n">0.2427 → 0.2784</text><text x="810" y="204" text-anchor="middle" class="note">all 12 family means positive</text>
+  <rect x="125" y="275" width="750" height="90" rx="16" class="box"/>
+  <text x="500" y="312" text-anchor="middle" class="t">Interpretation</text>
+  <text x="500" y="343" text-anchor="middle" class="note">BLAST improves temporal localization of the fixed causal Std256 score stream.</text>
+  <text x="500" y="369" text-anchor="middle" class="note">It does not claim earlier evidence access or earlier alarm delivery.</text>
+</svg>

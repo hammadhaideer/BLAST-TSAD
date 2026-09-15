@@ -4,40 +4,43 @@
 
 **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies** is submitted to **ICASSP 2027**.
 
-This repository is the public code companion for that submission. The repository status does not imply acceptance or publication.
+This repository is the public code and reproducibility companion for that submission. Repository availability does **not** imply conference acceptance or publication.
 
 ## Release
 
-**BLAST-TSAD v1.0.0**
+**BLAST-TSAD v1.0.1** — 2026-09-16
 
-The public scientific interface is considered stable for the submitted paper.
+The public scientific interface is considered stable for the submitted paper. Version 1.0.1 hardens provenance and reproduction while preserving the frozen scientific protocol and manuscript results.
 
 ### Included
 
-- BLAST attribution implementation;
-- primary causal score construction;
-- training-prefix normalization used for M70;
-- VUS-PR evaluation helpers;
+- BLAST bounded-latency attribution and release-time semantics;
+- exact primary causal Std256 score construction;
+- exact M70 training-prefix normalization, including the frozen numerical scale floor and fallback logic;
+- exact VUS-PR/VUS-ROC evaluation wrapper used by the study;
 - U237 development-selection runner;
-- M70 label-free scoring runner;
-- M70 frozen-delay confirmatory evaluator;
-- frozen cohort manifests;
-- environment pins;
-- tests and continuous integration;
-- citation and reproducibility documentation.
+- M70 label-free scoring runner and frozen-delay confirmatory evaluator;
+- post-freeze AP, AUROC, VUS-ROC, and common-support checks;
+- frozen U237 and M70 cohort manifests;
+- benchmark/cohort SHA256 provenance checks;
+- an end-to-end paper-reproduction command and numerical result checker;
+- unit tests and GitHub Actions CI;
+- final manuscript numerical result tables and browser-friendly documentation schematics;
+- citation, data, protocol, baseline, reproducibility, and release documentation.
 
 ### Not distributed in this repository
 
 - manuscript source or submitted PDF;
-- paper figures or tables;
-- generated numerical paper-result files;
-- pointwise/intermediate score archives;
 - raw benchmark datasets;
-- model checkpoints or caches;
-- internal audit/development records.
+- generated per-series/pointwise result archives;
+- third-party model checkpoints or caches;
+- private audit/development records and preregistration files;
+- original manuscript figure files.
+
+The SVGs under `assets/paper/` are explanatory repository figures derived from the frozen method semantics and reported results. They are not consumed by experiment code and do not affect numerical reproduction.
 
 ## Stability policy
 
-The method/protocol surface should not change during review except for a genuine correctness, security, or reproducibility fix. Documentation, citation metadata, and eventual proceedings metadata may be updated without altering the submitted scientific protocol.
+During review, method semantics, cohort membership, causal information-access rules, frozen operating-point selection, metric definitions, and confirmation protocol should not change except to correct a genuine implementation or reproducibility error. Any such correction must be documented in `CHANGELOG.md`.
 
-If the paper is accepted, proceedings metadata can be added to `CITATION.cff` while keeping the implementation versioned and traceable.
+Documentation, citation metadata, and eventual proceedings metadata may be updated without changing the submitted scientific protocol. If the paper is accepted, proceedings metadata can be added to `CITATION.cff` while keeping the implementation versioned and traceable.

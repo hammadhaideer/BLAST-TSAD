@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "blast-tsad"
-version = "1.0.0"
+version = "1.0.1"
 description = "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -32,6 +32,8 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/hammadhaideer/BLAST-TSAD"
 Documentation = "https://github.com/hammadhaideer/BLAST-TSAD/tree/main/docs"
+Results = "https://github.com/hammadhaideer/BLAST-TSAD/blob/main/docs/RESULTS.md"
+Reproducibility = "https://github.com/hammadhaideer/BLAST-TSAD/blob/main/docs/REPRODUCIBILITY.md"
 
 [tool.setuptools]
 packages = ["blast"]

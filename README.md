@@ -4,17 +4,16 @@
 
 **Reference implementation and reproducibility companion for the ICASSP 2027 submission**
 
-Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹
-
+Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹  
 ¹ Xinjiang University · ² AGH University of Krakow · ³ American University
 
 [![CI](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml/badge.svg)](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB.svg)](https://www.python.org/)
-[![Release](https://img.shields.io/badge/release-v1.0.0-2ea44f.svg)](#release-status)
+[![Release](https://img.shields.io/badge/release-v1.0.1-2ea44f.svg)](#release-status)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![ICASSP 2027](https://img.shields.io/badge/ICASSP-2027%20Submission-6A5ACD.svg)](#citation)
 
-[**Method**](#method-overview) · [**Installation**](#installation) · [**Data**](#data-preparation) · [**Run BLAST**](#running-blast) · [**Protocol**](docs/PROTOCOL.md) · [**Reproducibility**](docs/REPRODUCIBILITY.md) · [**Citation**](#citation)
+[**Overview**](#overview) · [**Method**](#method) · [**Results**](#main-results) · [**Reproduce**](#reproduce-the-paper) · [**Data**](#data) · [**Protocol**](docs/PROTOCOL.md) · [**Result ledger**](docs/RESULTS.md) · [**Citation**](#citation)
 
 </div>
 
@@ -22,61 +21,82 @@ Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹
 
 ## Overview
 
-**BLAST** is a causal score-attribution framework for streaming time-series anomaly detection. It addresses a simple timing mismatch: a causal detector may accumulate the evidence that best describes an event only after the event timestamp itself. BLAST therefore represents **event attribution time** and **evidence-availability time** separately.
+**BLAST** is a bounded-latency attribution framework for causal streaming time-series anomaly scores. It separates two timestamps that are often conflated in sliding-window detection:
 
-For a causal endpoint score \(q_e\) and non-negative delay \(d\), BLAST defines
+1. **attribution time** — where a score is assigned on the event timeline;
+2. **evidence-availability time** — when the observations supporting that score actually exist.
+
+For a causal endpoint score `q_e` and non-negative delay `d`, BLAST defines
 
 \[
-s_d(t)=q_{t+d}, \qquad r_d(t)=t+d,
+s_d(t)=q_{t+d}, \qquad r_d(t)=t+d.
 \]
 
-where \(s_d(t)\) is the score attributed to event timestamp \(t\), while \(r_d(t)\) records when the observations supporting that score are actually available.
+> **BLAST changes timestamp attribution only.** It does not retrain the detector, alter endpoint-score values, use observations before they arrive, or claim earlier alarm delivery.
 
-> **BLAST changes timestamp attribution only.** It does not retrain the detector, alter the underlying endpoint-score stream, use observations before they arrive, or claim an earlier alarm.
+<p align="center">
+  <img src="assets/paper/figure2_workflow.svg" width="900" alt="BLAST reproducible workflow">
+</p>
 
-### Research artifact status
+## Method
 
-| Item | Status |
-|---|---|
-| Paper | ICASSP 2027 submission |
-| Public code release | v1.0.0 |
-| Primary implementation | Python 3.11 |
-| Primary metric | VUS-PR |
-| CI | GitHub Actions |
-| License | MIT |
+The submitted study uses a fixed causal trailing sample-standard-deviation score with `W=256`. For M70, each channel is normalized using statistics fitted only on its filename-defined training prefix, the trailing statistic is computed per channel, and channel scores are averaged.
 
-### Key properties
+<p align="center">
+  <img src="assets/paper/figure1_attribution.svg" width="720" alt="Endpoint assignment versus BLAST attribution">
+</p>
 
-- **Causal information access** — every score uses only observations available at its declared release time.
-- **Bounded-latency attribution** — attribution time and evidence-availability time are represented explicitly.
-- **Detector-preserving** — BLAST changes temporal assignment while keeping the detector and endpoint-score values fixed.
-- **Frozen development → confirmation protocol** — the operating delay is selected on U237 and transferred unchanged to M70.
-- **Label-free confirmation scoring** — M70 score generation keeps the anomaly-label field opaque until evaluation.
-- **Official VUS-PR evaluation** — the public implementation uses the pinned `vus` implementation with the study's per-entity temporal buffer definition.
+The operating-point protocol is frozen:
 
-## Method Overview
+1. **U237 development:** evaluate `D={0,32,64,96,127}` on the fixed Std256 stream;
+2. **low-latency candidates:** `{32,64}`;
+3. **selection:** choose the smallest candidate satisfying every predeclared gate;
+4. **freeze:** select `d*=32`;
+5. **M70 confirmation:** generate scores label-free, then evaluate the frozen setting without retuning.
 
-```mermaid
-flowchart LR
-    A[Observed stream through e] --> B[Causal detector]
-    B --> C[Endpoint score q_e]
-    C --> D[BLAST delay d]
-    D --> E[Attribute score to t = e - d]
-    C --> F[Evidence available at e]
+The exact score construction, numerical scale floor, five selection gates, VUS call, label-access rules, and right-boundary convention are specified in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
-    G[U237 development cohort] --> H[Evaluate frozen delay grid]
-    H --> I[Select smallest qualifying low-latency d]
-    I --> J[Freeze operating point]
-    J --> K[M70 independent confirmation]
-```
+## Main results
 
-The primary score stream in the study is a causal trailing sample-standard-deviation statistic with window length \(W=256\). On multivariate M70 series, each channel is normalized using statistics fitted only on its training prefix; per-channel trailing standard deviations are then averaged into a scalar endpoint score.
+The primary comparison holds the underlying causal endpoint-score stream fixed and changes only temporal attribution.
 
-The full experimental protocol, selection gates, label-access rules, metric definition, and right-boundary convention are documented in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+| Cohort | `d=0` VUS-PR | `d=32` VUS-PR | Δ | Wins | Wilcoxon `p` |
+|---|---:|---:|---:|---:|---:|
+| U237 development | 0.3043 | **0.3300** | +0.0257 | 183 / 237 | 3.85e-22 |
+| M70 confirmation | 0.1705 | **0.2089** | +0.0384 | 54 / 70 | 2.65e-7 |
+
+On M70, the frozen configuration yields a **22.6% relative macro VUS-PR increase without retuning**. Family-balanced VUS-PR changes from **0.2427 to 0.2784**, and all 12 family mean gains are positive.
+
+<p align="center">
+  <img src="assets/paper/figure3_confirmation_summary.svg" width="720" alt="Frozen M70 confirmation summary">
+</p>
+
+### Development latency sweep
+
+| Delay `d` | `d/W` | U237 VUS-PR | Δ vs. `d=0` | Selection status |
+|---:|---:|---:|---:|---|
+| 0 | 0.000 | 0.3043 | 0.0000 | reference |
+| **32** | 0.125 | **0.3300** | +0.0257 | **selected** |
+| 64 | 0.250 | 0.3503 | +0.0461 | qualifies, not selected |
+| 96 | 0.375 | 0.3676 | +0.0633 | outside low-latency set |
+| 127 | 0.496 | 0.3696 | +0.0653 | outside low-latency set |
+
+The selected delay is therefore the **smallest qualifying low-latency operating point**, not the development optimum.
+
+### Post-freeze robustness
+
+| Cohort | Metric | `d=0` | `d=32` | Δ | `p` |
+|---|---|---:|---:|---:|---:|
+| U237 | AP | 0.2586 | 0.2864 | +0.0278 | 6.09e-11 |
+| U237 | AUROC | 0.6691 | 0.6903 | +0.0212 | 1.21e-3 |
+| U237 | VUS-ROC | 0.7216 | 0.7357 | +0.0141 | 8.30e-6 |
+| M70 | AP | 0.1398 | 0.1830 | +0.0432 | 4.71e-4 |
+| M70 | AUROC | 0.5259 | 0.5428 | +0.0169 | **0.0657** |
+| M70 | VUS-ROC | 0.6087 | 0.6209 | +0.0122 | 1.95e-4 |
+
+The M70 AUROC increase is reported explicitly as **not statistically significant** at the conventional 0.05 level. Full-precision values and the common-support boundary check are in [`docs/RESULTS.md`](docs/RESULTS.md).
 
 ## Installation
-
-Clone the repository and create the reference environment:
 
 ```bash
 git clone https://github.com/hammadhaideer/BLAST-TSAD.git
@@ -86,15 +106,13 @@ conda activate blast-tsad
 python -m pip install -e .
 ```
 
-A pip-only installation is also supported:
+Pip-only installation is also supported:
 
 ```bash
-git clone https://github.com/hammadhaideer/BLAST-TSAD.git
-cd BLAST-TSAD
 python -m pip install -e .
 ```
 
-Reference software stack:
+Reference stack:
 
 ```text
 Python          3.11
@@ -105,9 +123,7 @@ scikit-learn    1.9.0
 vus             0.0.6
 ```
 
-## Quick Verification
-
-The repository includes an invariant checker, unit tests, and a synthetic method example:
+## Quick verification
 
 ```bash
 python -m pip install pytest
@@ -116,11 +132,15 @@ pytest
 python examples/minimal_example.py
 ```
 
-The same checks run automatically in GitHub Actions.
+A successful artifact check ends with:
 
-## Data Preparation
+```text
+BLAST_PUBLIC_REPOSITORY_VERIFICATION: PASS
+```
 
-The experiments use the public **TSB-AD** univariate and multivariate benchmark archives. Dataset files are not redistributed by this repository.
+## Data
+
+The experiments use the public [TSB-AD](https://github.com/TheDatumOrg/TSB-AD) benchmark. Raw benchmark archives are **not** redistributed here.
 
 Place independently obtained archives at:
 
@@ -131,114 +151,108 @@ data/
     └── TSB-AD-M.zip
 ```
 
-Frozen archive checksums, cohort checksums, training-boundary conventions, and label-handling details are provided in [`docs/DATA.md`](docs/DATA.md).
+Every experimental runner checks the frozen archive/cohort SHA256 values before computation. See [`docs/DATA.md`](docs/DATA.md).
 
-## Running BLAST
+## Reproduce the paper
 
-The public runners follow the frozen protocol in three stages.
-
-### 1. U237 development selection
+After the verified archives are in place:
 
 ```bash
-python scripts/select_u237_delay.py
+python scripts/reproduce_paper.py
 ```
 
-This computes the fixed causal score stream, evaluates the frozen delay grid, applies the development-only selection rule, and writes generated outputs under `results/`.
+The command runs, in order:
 
-### 2. M70 label-free score generation
-
-```bash
-python scripts/score_m70_label_free.py
+```text
+repository/provenance verification
+        ↓
+U237 development selection
+        ↓
+M70 label-free score generation
+        ↓
+M70 frozen confirmatory evaluation
+        ↓
+post-freeze metric + common-support checks
+        ↓
+exact manuscript-number audit
 ```
 
-This stage reads feature columns while keeping the final label field opaque, fits normalization on the training prefix only, and generates endpoint/attributed score arrays without computing an anomaly metric.
+A successful full rerun ends with:
 
-### 3. M70 confirmatory evaluation
-
-```bash
-python scripts/evaluate_m70_confirmatory.py
+```text
+BLAST_MANUSCRIPT_NUMBERS: PASS
+BLAST_PAPER_REPRODUCTION: PASS
 ```
 
-Only after the label-free score package exists does this stage read M70 labels and evaluate the already frozen delay. It does not search for another operating point or retune the score function.
+Manual stages and generated-output paths are documented in [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
 
-For custom paths, each runner exposes its available command-line options through `--help`.
+## Reproducibility safeguards
 
-## Evaluation
+The public implementation deliberately fails rather than silently changing the submitted protocol:
 
-The primary metric is **VUS-PR** using the pinned `vus==0.0.6` package. The per-entity evaluation buffer is
+- archive and cohort SHA256 mismatches abort execution;
+- M70 scoring keeps the label field opaque until confirmatory evaluation;
+- M70 pointwise score artifacts are hashed before labels are opened;
+- VUS evaluation uses the pinned public `vus==0.0.6` implementation and explicit study arguments;
+- non-finite scores abort rather than triggering a fallback metric;
+- paper numbers are checked against the frozen numerical ledger;
+- right-edge padding is accompanied by an identical-support sensitivity check.
 
-\[
-L_e = \max\left(1,\operatorname{round}(\operatorname{median}\{\text{ground-truth anomaly-run lengths}\})\right).
-\]
-
-The public metric wrapper fails explicitly if the official VUS implementation is unavailable; it does not silently replace VUS-PR with a different metric.
-
-The broader M70 benchmark contains methods with different information-access assumptions. Their protocol categories and the pinned TSB-AD reference used by the submission are documented in [`docs/BASELINES.md`](docs/BASELINES.md); they should not be interpreted as strictly interchangeable causal competitors.
-
-## Repository Structure
+## Repository structure
 
 ```text
 BLAST-TSAD/
+├── assets/paper/                  # documentation figures + integrity hashes
 ├── blast/
-│   ├── core.py                 # BLAST attribution and causal Std256 scoring
-│   ├── data.py                 # TSB-AD readers and label-free access
-│   └── metrics.py              # VUS-PR and paired statistics
-├── configs/                    # frozen U237 and M70 cohort manifests
+│   ├── core.py                    # attribution, Std256, exact M70 normalization
+│   ├── data.py                    # TSB-AD readers and label-free access
+│   ├── metrics.py                 # VUS/AP/AUROC and paired statistics
+│   └── provenance.py              # frozen archive/cohort checksums
+├── configs/                       # exact U237 and M70 cohort manifests
 ├── docs/
 │   ├── BASELINES.md
 │   ├── DATA.md
 │   ├── PROTOCOL.md
 │   ├── REPRODUCIBILITY.md
-│   └── RELEASE_STATUS.md
-├── examples/
-│   └── minimal_example.py
+│   ├── RELEASE_STATUS.md
+│   └── RESULTS.md
+├── examples/minimal_example.py
 ├── scripts/
 │   ├── select_u237_delay.py
 │   ├── score_m70_label_free.py
 │   ├── evaluate_m70_confirmatory.py
+│   ├── evaluate_postfreeze_robustness.py
+│   ├── check_paper_results.py
+│   ├── reproduce_paper.py
 │   └── verify_repository.py
 ├── tests/
 ├── .github/workflows/ci.yml
-├── CHANGELOG.md
 ├── CITATION.cff
-├── CONTRIBUTING.md
 ├── LICENSE
 ├── environment.yml
 ├── pyproject.toml
 └── requirements.txt
 ```
 
-## Documentation
+## Scientific scope
 
-- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — causal semantics, score construction, delay selection, confirmation protocol, and metric definition.
-- [`docs/DATA.md`](docs/DATA.md) — TSB-AD layout, archive checksums, frozen cohort hashes, and label handling.
-- [`docs/BASELINES.md`](docs/BASELINES.md) — contextual baseline protocols, information-access categories, and pinned TSB-AD provenance.
-- [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — environment specification and rerun sequence.
-- [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md) — public release scope and stability policy.
+BLAST establishes a controlled improvement in **temporal localization** for the tested causal Std256 score stream under an explicit evidence delay. It does **not** claim earlier computation, earlier access to future observations, earlier alarm delivery, or a universally optimal delay across detectors/datasets.
 
-## Public Release Scope
+Contextual detectors with different training or information-access protocols are not presented as interchangeable causal baselines. See [`docs/BASELINES.md`](docs/BASELINES.md).
 
-This repository publishes the **method implementation and reproducibility protocol** for the ICASSP 2027 submission. The manuscript source/PDF, paper figures and tables, generated numerical result files, pointwise score archives, raw benchmark datasets, checkpoints, and the private frozen audit record are intentionally not part of this public code release.
+## Release status
 
-This separation keeps the public repository compact while preserving the exact private evidence bundle used for scientific auditing.
-
-## Release Status
-
-The public implementation is currently released as **v1.0.0**. Scientific semantics, cohort manifests, causal information-access rules, and evaluation conventions should be treated as stable for the submission. See [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md) and [`CHANGELOG.md`](CHANGELOG.md).
+The current public implementation is **v1.0.1**. It aligns the public code with the frozen audited manuscript protocol and adds end-to-end reproduction and verification without changing the reported scientific results. See [`CHANGELOG.md`](CHANGELOG.md) and [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md).
 
 ## Citation
 
-This repository accompanies the **ICASSP 2027 submission**. Until proceedings metadata are available, please use the repository citation metadata in [`CITATION.cff`](CITATION.cff).
+This repository accompanies the **ICASSP 2027 submission**. Until proceedings metadata are available, use [`CITATION.cff`](CITATION.cff):
 
 ```text
 Hammad Ali Haider, Marcin Pietroń, Roberto Corizzo, and Panpan Zheng,
 "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies,"
-ICASSP 2027 submission, 2026.
+submitted to ICASSP 2027, 2026.
 ```
-
-## Contributing
-
-Reproducibility reports and implementation-focused issues are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening an issue or proposing a change.
 
 ## License
 

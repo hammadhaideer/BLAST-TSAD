@@ -1,11 +1,11 @@
 """Core BLAST reference implementation.
 
 This module contains the method-level operations used by the public code
-companion for the ICASSP 2027 submission.  The functions are intentionally
+companion for the ICASSP 2027 submission. The functions are intentionally
 small and repository-relative; they do not depend on manuscript or result
 artifacts.
 
-BLAST separates event attribution time from evidence release time.  For an
+BLAST separates event attribution time from evidence release time. For an
 endpoint score q_e and non-negative delay d, the attributed score is
 
     s_d(t) = q_{t+d}
@@ -20,6 +20,7 @@ from dataclasses import dataclass
 import numpy as np
 
 MAD_NORMAL_SCALE = 1.4826
+FLOAT64_SCALE_FLOOR_MULTIPLIER = 64.0
 
 
 @dataclass(frozen=True)
@@ -46,11 +47,17 @@ def fit_prefix_normalization(
     x: np.ndarray,
     train_index: int,
 ) -> PrefixNormalization:
-    """Fit the M70 robust normalization on the training prefix.
+    """Fit the exact M70 robust normalization on the training prefix.
 
-    The frozen study uses per-channel median and 1.4826*MAD.  If a MAD scale
-    is non-positive/non-finite, sample standard deviation (ddof=1) is used as
-    a fallback; any still-invalid scale is replaced by 1.0.
+    For each channel, the frozen study uses the prefix median and
+    ``1.4826 * MAD``. A numerical floor is defined as
+
+    ``64 * eps_float64 * max(1, abs(median))``.
+
+    If the MAD scale is non-finite or does not exceed this floor, the prefix
+    sample standard deviation (``ddof=1``) is used when it exceeds the same
+    floor; otherwise the scale is set to ``1.0``. These statistics are then
+    held fixed for the complete series.
     """
 
     arr, _ = _as_2d_float(x)
@@ -59,12 +66,21 @@ def fit_prefix_normalization(
 
     prefix = arr[:train_index]
     med = np.median(prefix, axis=0)
-    mad = np.median(np.abs(prefix - med), axis=0) * MAD_NORMAL_SCALE
-    std = np.std(prefix, axis=0, ddof=1)
+    mad = np.median(np.abs(prefix - med), axis=0)
+    scale = MAD_NORMAL_SCALE * mad
 
-    good_mad = np.isfinite(mad) & (mad > 0.0)
-    scale = np.where(good_mad, mad, std)
-    scale = np.where(np.isfinite(scale) & (scale > 0.0), scale, 1.0)
+    for c in range(arr.shape[1]):
+        floor = (
+            FLOAT64_SCALE_FLOOR_MULTIPLIER
+            * np.finfo(np.float64).eps
+            * max(1.0, abs(float(med[c])))
+        )
+        if not np.isfinite(scale[c]) or scale[c] <= floor:
+            alt = float(np.std(prefix[:, c], ddof=1))
+            if np.isfinite(alt) and alt > floor:
+                scale[c] = alt
+            else:
+                scale[c] = 1.0
 
     return PrefixNormalization(median=med, scale=scale)
 
@@ -79,6 +95,8 @@ def apply_prefix_normalization(
     if arr.shape[1] != stats.median.shape[0]:
         raise ValueError("channel count does not match fitted statistics")
     out = (arr - stats.median) / stats.scale
+    if not np.all(np.isfinite(out)):
+        raise ValueError("normalization produced non-finite values")
     return out[:, 0] if was_1d else out
 
 
@@ -95,8 +113,8 @@ def robust_prefix_normalize(
 def trailing_sample_std(x: np.ndarray, window: int) -> np.ndarray:
     """Causal trailing sample standard deviation with ``ddof=1``.
 
-    The returned array has the same shape as the input.  Positions before the
-    first complete trailing window are ``NaN``.  For multivariate input the
+    The returned array has the same shape as the input. Positions before the
+    first complete trailing window are ``NaN``. For multivariate input the
     statistic is computed independently for each channel.
     """
 
@@ -132,8 +150,8 @@ def scalar_endpoint_score(
     """Primary causal endpoint score used by the BLAST study.
 
     For a univariate series this is the trailing sample standard deviation.
-    For a multivariate series it is the mean of the per-channel trailing
-    sample standard deviations at each endpoint.
+    For a multivariate series it is the equal-weight mean of the per-channel
+    trailing sample standard deviations at each endpoint.
     """
 
     std = trailing_sample_std(x, window)
@@ -160,8 +178,8 @@ def make_test_scores(
     delay:
         Non-negative BLAST delay ``d``.
     pad_value:
-        Value stored where ``t+d`` falls beyond the available series.  The
-        frozen implementation used 0.0 for its full-length arrays.
+        Value stored where ``t+d`` falls beyond the available series. The
+        frozen full-length implementation uses ``0.0``.
 
     Returns
     -------
@@ -199,7 +217,7 @@ def bounded_latency_attribution(
     """Attribute an endpoint score stream and expose release-time semantics.
 
     Returns ``(scores, valid, release_index)`` where ``release_index[t]=t+d``
-    on the formal valid support.  Invalid right-boundary entries are set to
+    on the formal valid support. Invalid right-boundary entries are set to
     ``-1`` in ``release_index``.
     """
 
