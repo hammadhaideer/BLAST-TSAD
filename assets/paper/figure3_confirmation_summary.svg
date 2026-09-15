@@ -1,11 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430">
-  <style>.h{font:bold 28px Arial,sans-serif;fill:#111}.t{font:21px Arial,sans-serif;fill:#111}.n{font:bold 34px Arial,sans-serif;fill:#14532d}.box{fill:#f8fafc;stroke:#64748b;stroke-width:2}.good{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.note{font:17px Arial,sans-serif;fill:#475569}</style>
-  <text x="500" y="42" text-anchor="middle" class="h">Frozen M70 confirmation summary</text>
-  <rect x="55" y="90" width="270" height="135" rx="16" class="box"/><text x="190" y="125" text-anchor="middle" class="t">Macro VUS-PR</text><text x="190" y="173" text-anchor="middle" class="n">0.1705 → 0.2089</text><text x="190" y="204" text-anchor="middle" class="note">+22.6% relative, no retuning</text>
-  <rect x="365" y="90" width="270" height="135" rx="16" class="good"/><text x="500" y="125" text-anchor="middle" class="t">Paired wins</text><text x="500" y="173" text-anchor="middle" class="n">54 / 70</text><text x="500" y="204" text-anchor="middle" class="note">Wilcoxon p = 2.65×10⁻⁷</text>
-  <rect x="675" y="90" width="270" height="135" rx="16" class="good"/><text x="810" y="125" text-anchor="middle" class="t">Family-balanced VUS-PR</text><text x="810" y="173" text-anchor="middle" class="n">0.2427 → 0.2784</text><text x="810" y="204" text-anchor="middle" class="note">all 12 family means positive</text>
-  <rect x="125" y="275" width="750" height="90" rx="16" class="box"/>
-  <text x="500" y="312" text-anchor="middle" class="t">Interpretation</text>
-  <text x="500" y="343" text-anchor="middle" class="note">BLAST improves temporal localization of the fixed causal Std256 score stream.</text>
-  <text x="500" y="369" text-anchor="middle" class="note">It does not claim earlier evidence access or earlier alarm delivery.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="500" viewBox="0 0 1100 500" role="img" aria-labelledby="title desc">
+  <title id="title">Frozen M70 confirmation summary</title>
+  <desc id="desc">Summary of frozen M70 confirmation results for BLAST at delay 32, including macro VUS-PR, paired wins, family-balanced VUS-PR, and interpretation.</desc>
+  <style>
+    .title{font:700 30px Arial,Helvetica,sans-serif;fill:#111827}
+    .heading{font:20px Arial,Helvetica,sans-serif;fill:#111827}
+    .number{font:700 34px Arial,Helvetica,sans-serif;fill:#166534}
+    .note{font:17px Arial,Helvetica,sans-serif;fill:#475569}
+    .card{fill:#f8fafc;stroke:#64748b;stroke-width:2}
+    .good{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}
+  </style>
+
+  <text x="550" y="42" text-anchor="middle" class="title">Frozen M70 confirmation summary</text>
+
+  <rect x="45" y="92" width="310" height="160" rx="16" class="card"/>
+  <text x="200" y="128" text-anchor="middle" class="heading">Macro VUS-PR</text>
+  <text x="200" y="178" text-anchor="middle" class="number">0.1705 → 0.2089</text>
+  <text x="200" y="215" text-anchor="middle" class="note">+22.6% relative</text>
+  <text x="200" y="238" text-anchor="middle" class="note">frozen d*=32, no retuning</text>
+
+  <rect x="395" y="92" width="310" height="160" rx="16" class="good"/>
+  <text x="550" y="128" text-anchor="middle" class="heading">Paired wins</text>
+  <text x="550" y="178" text-anchor="middle" class="number">54 / 70</text>
+  <text x="550" y="215" text-anchor="middle" class="note">Wilcoxon p = 2.65 × 10⁻⁷</text>
+  <text x="550" y="238" text-anchor="middle" class="note">median paired gain = +0.0010</text>
+
+  <rect x="745" y="92" width="310" height="160" rx="16" class="good"/>
+  <text x="900" y="126" text-anchor="middle" class="heading">Family-balanced</text>
+  <text x="900" y="151" text-anchor="middle" class="heading">VUS-PR</text>
+  <text x="900" y="194" text-anchor="middle" class="number">0.2427 → 0.2784</text>
+  <text x="900" y="229" text-anchor="middle" class="note">all 12 family means positive</text>
+
+  <rect x="95" y="310" width="910" height="140" rx="16" class="card"/>
+  <text x="550" y="347" text-anchor="middle" class="heading">Controlled interpretation</text>
+  <text x="550" y="382" text-anchor="middle" class="note">BLAST improves temporal localization of the fixed causal Std256 endpoint-score stream.</text>
+  <text x="550" y="410" text-anchor="middle" class="note">The detector and endpoint-score values are unchanged; only timestamp attribution changes.</text>
+  <text x="550" y="438" text-anchor="middle" class="note">No claim is made of earlier evidence access, earlier computation, or earlier alarm delivery.</text>
 </svg>
