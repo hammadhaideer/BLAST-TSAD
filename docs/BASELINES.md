@@ -1,47 +1,43 @@
-# Baselines and Information Access
+# Comparison Scope and Information Access
 
-The submitted paper separates the controlled BLAST comparison from contextual detector comparisons. This document records that distinction without publishing numerical paper results.
+The ICASSP 2027 submission makes one primary controlled comparison and one explicitly contextual external comparison. Keeping those roles separate is important for interpreting BLAST correctly.
 
 ## Controlled BLAST comparison
 
-The primary causal comparison holds the underlying endpoint score stream fixed and changes only timestamp attribution:
+The scientific claim holds the causal endpoint-score stream fixed and changes only timestamp attribution:
 
 ```text
-d = 0        endpoint assignment
-d = d*       BLAST bounded-latency attribution
+d = 0        conventional endpoint assignment
+d = 32       frozen BLAST attribution
 ```
 
-For the primary Std256 stream, score generation, window length, preprocessing, and detector parameters are identical across the two attribution conditions.
+For the primary Std256 score stream, the following are identical across the two arms:
 
-## Information-access protocol codes
+- source time series;
+- preprocessing;
+- window `W = 256`;
+- endpoint-score values `q_e`;
+- detector/scoring parameters;
+- information available at each endpoint.
 
-The broader M70 comparison contains methods with different information-access assumptions. They are therefore contextual detector references rather than strictly interchangeable causal competitors.
+Only the timestamp attached to the endpoint score changes. For `d>0`, the score remains available only at its original endpoint time.
 
-| Code | Protocol | Methods used in the submitted comparison |
-|---|---|---|
-| `B` | Pinned TSB-AD benchmark-wrapper protocol | PCA, KMeansAD, IForest, EIF, COPOD, HBOS, LOF |
-| `P` | Training on the normal prefix with full-query score-vector standardization | PaAno-PAI |
-| `S` | Training on the normal prefix and scoring the test region; not presented as sample-causal evidence | STREAM-VAE |
-| `F` | Full-series zero-shot inference | Time-RCD |
-| `C` | Causal score generation with explicitly declared BLAST attribution delay | Std256 / BLAST |
+## Contextual TimeRCD comparison
 
-Because these access protocols differ, the paper treats the broader benchmark as context. The controlled scientific claim is the paired attribution comparison on the same fixed causal score stream.
+The manuscript additionally reports a reproduced TimeRCD VUS-PR value of **0.2101** on the M70 evaluation region. TimeRCD uses a different **full-series zero-shot inference** protocol. It is therefore included only as context and must not be described as an interchangeable causal baseline for BLAST.
 
-## Pinned TSB-AD reference
+The primary BLAST claim remains the paired comparison against the same Std256 stream at `d=0`.
 
-Classical benchmark wrappers and the HSF causal transfer check were tied to the TSB-AD repository snapshot recorded by the submission:
+## Third-party provenance
+
+The TSB-AD benchmark repository used for dataset provenance is:
 
 ```text
-repository: https://github.com/TheDatumOrg/TSB-AD
-commit:     e0975a5f7d3e65ab77e9fab24d1b5b51acda8f48
+https://github.com/TheDatumOrg/TSB-AD
 ```
 
-This repository does not vendor TSB-AD or third-party baseline implementations. Their original licenses and repositories remain authoritative.
+Third-party methods and datasets retain their own licenses and repositories. BLAST-TSAD does not vendor them.
 
-## Cross-detector transfer
+## Interpretation rule
 
-The submitted study also transfers the development-selected BLAST delay to a second fixed causal score stream (HSF causal) without running a rescue-delay search. This is a transfer check of the attribution rule, not a second operating-point tuning stage.
-
-## Reproduction guidance
-
-For BLAST itself, use the public runners in this repository and the frozen cohort manifests in `configs/`. For third-party methods, use the corresponding original implementation or the pinned TSB-AD snapshot under its own licensing terms, while preserving the information-access protocol described above.
+A better VUS-PR after attribution means improved temporal agreement with anomaly intervals under the declared evidence delay. It does **not** establish an earlier alarm or faster information access.
