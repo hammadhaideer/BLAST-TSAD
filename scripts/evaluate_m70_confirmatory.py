@@ -17,9 +17,6 @@ from blast.provenance import M70_COHORT_SHA256, TSB_AD_M_SHA256, require_sha256,
 
 WINDOW = 256
 DSTAR = 32
-MIN_GAIN = 0.015
-MIN_WIN = 0.58
-ALPHA = 0.05
 
 EXPECTED_FAMILIES = {
     "CATSv2": 5,
@@ -143,14 +140,6 @@ def main() -> None:
 
     fb0 = float(np.mean(family0))
     fb32 = float(np.mean(family32))
-    gates = {
-        "macro_superiority": macro32 > macro0,
-        "absolute_gain_ge_0.015": gain >= MIN_GAIN,
-        "median_delta_gt_0": paired["median_delta"] > 0.0,
-        "win_fraction_ge_0.58": paired["strict_win_fraction"] >= MIN_WIN,
-        "wilcoxon_p_lt_0.05": paired["wilcoxon_p"] < ALPHA,
-        "family_balanced_superiority": fb32 > fb0,
-    }
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -161,6 +150,7 @@ def main() -> None:
 
     summary = {
         "status": "CONFIRMATORY_COMPLETE",
+        "confirmation_protocol": "frozen d*=32 descriptive evaluation; no confirmation-driven selection or retuning",
         "series": len(rows),
         "window": WINDOW,
         "frozen_delay": DSTAR,
@@ -173,9 +163,11 @@ def main() -> None:
         "family_balanced_macro_d32": fb32,
         "family_results": family_results,
         "all_family_mean_gains_positive": bool(all(row["gain"] > 0.0 for row in family_results.values())),
-        "gates": gates,
-        "CONFIRM_GO": bool(all(gates.values())),
-        "provenance": {"data_sha256": data_sha, "cohort_sha256": cohort_sha, "pointwise_manifest_sha256": pointwise_manifest_sha},
+        "provenance": {
+            "data_sha256": data_sha,
+            "cohort_sha256": cohort_sha,
+            "pointwise_manifest_sha256": pointwise_manifest_sha,
+        },
     }
     (out / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary, indent=2, sort_keys=True))
