@@ -1,8 +1,8 @@
 # Expected Manuscript Results
 
-This page records the **final BLAST numbers reported in the ICASSP 2027 submission**. They are reference values for reproduction checks; they are not used to compute the results.
+This page records the **final BLAST numbers reported in the ICASSP 2027 submission** and the higher-precision values retained for public reproduction checks. These values are a verification ledger; they are never read by the score-generation or metric-computation code.
 
-The executable checker [`scripts/check_paper_results.py`](../scripts/check_paper_results.py) compares freshly generated outputs with this frozen numerical ledger.
+The executable checker [`scripts/check_paper_results.py`](../scripts/check_paper_results.py) compares freshly generated outputs with this ledger.
 
 ## Primary operating point
 
@@ -19,19 +19,25 @@ The executable checker [`scripts/check_paper_results.py`](../scripts/check_paper
 | U237 development | 0.3042832564 | 0.3300181420 | +0.0257348855 | 183 / 237 | +0.0039788054 | 3.848e-22 |
 | M70 confirmation | 0.1704915933 | 0.2089374630 | +0.0384458697 | 54 / 70 | +0.0010183441 | 2.647e-7 |
 
-The M70 relative macro VUS-PR increase is approximately **22.6%**. M70 family-balanced VUS-PR changes from **0.2427253270** to **0.2783612076**, and all 12 family mean gains are positive.
+The M70 relative macro VUS-PR increase is approximately **22.6%**. M70 family-balanced VUS-PR changes from **0.2427253270** to **0.2783612076**, a gain of **0.0356358806**, and all 12 family mean VUS-PR gains are positive.
+
+<p align="center">
+  <img src="../assets/paper/Figure3_M70_family_gain_FINAL.png" width="520" alt="Family-wise M70 mean VUS-PR gain at d*=32">
+</p>
+
+<p align="center"><em>Family-wise M70 confirmation at the frozen `d*=32`; all 12 family means are positive.</em></p>
 
 ## U237 development-only latency sweep
 
-| Delay | `d/W` | Macro VUS-PR | Gain vs. `d=0` |
-|---:|---:|---:|---:|
-| 0 | 0.000 | 0.3042832564 | 0.0000000000 |
-| **32** | **0.125** | **0.3300181420** | **+0.0257348855** |
-| 64 | 0.250 | 0.3503386609 | +0.0460554044 |
-| 96 | 0.375 | 0.3676137171 | +0.0633304607 |
-| 127 | 0.496 | 0.3695643623 | +0.0652811058 |
+| Delay | `d/W` | Macro VUS-PR | Gain vs. `d=0` | Selection role |
+|---:|---:|---:|---:|---|
+| 0 | 0.000 | 0.3042832564 | 0.0000000000 | endpoint reference |
+| **32** | **0.125** | **0.3300181420** | **+0.0257348855** | **smallest passing low-latency candidate** |
+| 64 | 0.250 | 0.3503386609 | +0.0460554044 | passing low-latency candidate |
+| 96 | 0.375 | 0.3676137171 | +0.0633304607 | development sweep only |
+| 127 | 0.496 | 0.3695643623 | +0.0652811058 | development sweep only |
 
-The frozen rule chooses the **smallest passing low-latency candidate**, not the highest development score. Both 32 and 64 pass; therefore `d*=32` is frozen before M70 confirmation.
+All four nonzero delays satisfy the generic positive-development gates, but the frozen rule selects the **smallest passing delay within the predeclared low-latency set `{32,64}`**. Therefore `d*=32` is frozen before M70 confirmation; it is not the development optimum.
 
 ## Post-freeze metric robustness
 
@@ -44,23 +50,34 @@ The frozen rule chooses the **smallest passing low-latency candidate**, not the 
 | M70 | AUROC | 0.5259159281 | 0.5428139504 | +0.0168980222 | **0.0657** |
 | M70 | VUS-ROC | 0.6087072548 | 0.6209005304 | +0.0121932756 | 1.954e-4 |
 
-The M70 AUROC increase is numerical but **not statistically significant at `p<0.05`**.
+The M70 AUROC increase is numerical but **not statistically significant at `p<0.05`**. The repository preserves this negative robustness detail explicitly.
 
 ## Common-support boundary sensitivity
 
-The primary implementation preserves output length by zero-filling the final `d` positions that have no future endpoint score. As a post-freeze boundary check, both arms are also evaluated on identical temporal support by removing the final 32 samples from both.
+The primary implementation preserves output length by zero-filling the final `d` positions that have no future endpoint score. As a post-freeze boundary check, both arms are also evaluated on identical temporal support by removing the final 32 samples from each.
 
-| Cohort | Common-support `d=0` | Common-support `d=32` | Wilcoxon `p` |
-|---|---:|---:|---:|
-| U237 | 0.3036 | 0.3304 | 2.49e-23 |
-| M70 | 0.1705 | 0.2089 | 1.16e-7 |
+| Cohort | Common-support `d=0` | Common-support `d=32` | Gain | Wilcoxon `p` |
+|---|---:|---:|---:|---:|
+| U237 | 0.303624181 | 0.330447853 | +0.026823672 | 2.48571e-23 |
+| M70 | 0.170531317 | 0.208923014 | +0.038391697 | 1.16342e-7 |
 
-Thus the reported VUS-PR improvement is not explained by right-edge zero filling.
+The manuscript rounds these values to `0.3036→0.3304` and `0.1705→0.2089`. The improvement therefore persists when right-edge zero filling is removed from both arms.
 
 ## Contextual TimeRCD value
 
-The manuscript reports a reproduced **TimeRCD VUS-PR of 0.2101** on the same M70 evaluation region for context only. TimeRCD uses a different full-series zero-shot information-access protocol, so it is **not** a controlled causal competitor to BLAST. This public repository reproduces the controlled BLAST experiment; it does not vendor or modify the TimeRCD implementation.
+The manuscript reports a reproduced **TimeRCD VUS-PR of 0.2101** on the same M70 evaluation region for context only. TimeRCD uses a different full-series zero-shot information-access protocol, so it is **not** a controlled causal competitor to BLAST. This repository reproduces the controlled BLAST experiment and does not vendor or modify the TimeRCD implementation.
+
+## Paper figures
+
+The final paper figures are included under [`../assets/paper/`](../assets/paper/) as documentation assets:
+
+- `Figure1.png` — endpoint assignment versus BLAST attribution;
+- `Figure2_BLAST_final.png` — causal workflow and development-to-confirmation freeze;
+- `Figure3_M70_family_gain_FINAL.pdf` — original vector family-gain figure;
+- `Figure3_M70_family_gain_FINAL.png` — web-rendered copy used in this documentation.
+
+Their SHA256 values are tracked in `assets/paper/SHA256SUMS.txt` and checked by `scripts/verify_repository.py`.
 
 ## Interpretation
 
-BLAST improves **temporal localization** of a fixed causal score stream under an explicitly declared evidence delay. These results do not imply earlier computation, earlier alarm delivery, or earlier intervention.
+BLAST improves **temporal localization** of a fixed causal score stream under an explicitly declared evidence delay. These results do not imply earlier computation, earlier alarm delivery, or earlier intervention, and they do not establish `d*=32` as universally optimal for other score streams.
