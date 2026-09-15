@@ -2,6 +2,8 @@
 
 All notable public changes to BLAST-TSAD are documented here.
 
+Paper: **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**.
+
 ## v1.0.1 — 2026-09-16
 
 Reproducibility-hardening release for the ICASSP 2027 submission.
