@@ -1,27 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Endpoint assignment versus BLAST attribution</title>
+  <desc id="desc">Comparison of conventional endpoint assignment at delay zero and BLAST bounded-latency attribution with separate attribution and evidence-availability times.</desc>
   <style>
-    .t{font:22px Arial,sans-serif;fill:#111}.s{font:18px Arial,sans-serif;fill:#333}.h{font:bold 26px Arial,sans-serif;fill:#111}.b{fill:#f7f7f7;stroke:#555;stroke-width:2}.p{fill:#eef4ff;stroke:#3b6db5;stroke-width:2}.a{fill:#fff4e6;stroke:#d97706;stroke-width:2}.line{stroke:#333;stroke-width:3}.dash{stroke:#777;stroke-width:2;stroke-dasharray:8 7}.arrow{marker-end:url(#m)}
+    .title{font:700 28px Arial,Helvetica,sans-serif;fill:#111827}
+    .panel-title{font:700 25px Arial,Helvetica,sans-serif;fill:#111827}
+    .body{font:20px Arial,Helvetica,sans-serif;fill:#111827}
+    .small{font:17px Arial,Helvetica,sans-serif;fill:#374151}
+    .panel{fill:#f8fafc;stroke:#64748b;stroke-width:2}
+    .blue{fill:#eff6ff;stroke:#2563eb;stroke-width:2}
+    .orange{fill:#fff7ed;stroke:#ea580c;stroke-width:2}
+    .timeline{stroke:#374151;stroke-width:3}
+    .guide{stroke:#94a3b8;stroke-width:2;stroke-dasharray:8 7}
+    .arrow{stroke:#374151;stroke-width:3;marker-end:url(#arrow)}
   </style>
-  <defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#333"/></marker></defs>
-  <text x="550" y="38" text-anchor="middle" class="h">Endpoint assignment vs. BLAST attribution</text>
-  <rect x="40" y="70" width="480" height="390" rx="16" class="b"/>
-  <rect x="580" y="70" width="480" height="390" rx="16" class="b"/>
-  <text x="280" y="112" text-anchor="middle" class="h">(a) Endpoint assignment, d = 0</text>
-  <text x="820" y="112" text-anchor="middle" class="h">(b) BLAST attribution, d &gt; 0</text>
-  <line x1="105" y1="300" x2="455" y2="300" class="line arrow"/>
-  <line x1="645" y1="300" x2="995" y2="300" class="line arrow"/>
-  <line x1="255" y1="165" x2="255" y2="350" class="dash"/>
-  <line x1="740" y1="165" x2="740" y2="350" class="dash"/>
-  <line x1="900" y1="165" x2="900" y2="350" class="dash"/>
-  <rect x="150" y="185" width="105" height="52" rx="8" class="p"/><text x="202" y="218" text-anchor="middle" class="s">causal window</text>
-  <rect x="635" y="185" width="265" height="52" rx="8" class="p"/><text x="768" y="218" text-anchor="middle" class="s">x[t+d-W+1 : t+d]</text>
-  <circle cx="255" cy="300" r="11" fill="#3b6db5"/><text x="255" y="382" text-anchor="middle" class="t">t = e</text>
-  <rect x="185" y="395" width="140" height="45" rx="8" class="p"/><text x="255" y="425" text-anchor="middle" class="s">q_t available</text>
-  <circle cx="740" cy="300" r="11" fill="#d97706"/><circle cx="900" cy="300" r="11" fill="#3b6db5"/>
-  <text x="740" y="382" text-anchor="middle" class="t">attribution: t</text>
-  <text x="900" y="382" text-anchor="middle" class="t">availability: t+d</text>
-  <rect x="655" y="395" width="170" height="45" rx="8" class="a"/><text x="740" y="425" text-anchor="middle" class="s">score assigned here</text>
-  <rect x="830" y="395" width="140" height="45" rx="8" class="p"/><text x="900" y="425" text-anchor="middle" class="s">q_{t+d} exists</text>
-  <line x1="752" y1="335" x2="888" y2="335" class="line arrow"/>
-  <text x="820" y="327" text-anchor="middle" class="s">evidence delay d</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <text x="600" y="40" text-anchor="middle" class="title">Endpoint assignment vs. BLAST attribution</text>
+
+  <rect x="40" y="72" width="520" height="430" rx="18" class="panel"/>
+  <text x="300" y="112" text-anchor="middle" class="panel-title">(a) Endpoint assignment, d = 0</text>
+
+  <rect x="115" y="160" width="250" height="74" rx="12" class="blue"/>
+  <text x="240" y="190" text-anchor="middle" class="body">Causal window</text>
+  <text x="240" y="216" text-anchor="middle" class="small">x[e−W+1 … e]</text>
+  <line x1="365" y1="197" x2="390" y2="267" class="arrow"/>
+
+  <line x1="105" y1="300" x2="505" y2="300" class="timeline arrow"/>
+  <line x1="390" y1="245" x2="390" y2="355" class="guide"/>
+  <circle cx="390" cy="300" r="11" fill="#2563eb"/>
+  <text x="390" y="382" text-anchor="middle" class="body">endpoint e</text>
+
+  <rect x="145" y="408" width="310" height="58" rx="12" class="blue"/>
+  <text x="300" y="434" text-anchor="middle" class="small">q(e) is assigned at e</text>
+  <text x="300" y="456" text-anchor="middle" class="small">and is available at e</text>
+
+  <rect x="640" y="72" width="520" height="430" rx="18" class="panel"/>
+  <text x="900" y="112" text-anchor="middle" class="panel-title">(b) BLAST attribution, d &gt; 0</text>
+
+  <rect x="750" y="160" width="270" height="74" rx="12" class="blue"/>
+  <text x="885" y="190" text-anchor="middle" class="body">Evidence window</text>
+  <text x="885" y="216" text-anchor="middle" class="small">x[t+d−W+1 … t+d]</text>
+  <line x1="995" y1="234" x2="1015" y2="267" class="arrow"/>
+
+  <line x1="705" y1="300" x2="1105" y2="300" class="timeline arrow"/>
+  <line x1="820" y1="245" x2="820" y2="355" class="guide"/>
+  <line x1="1015" y1="245" x2="1015" y2="355" class="guide"/>
+  <circle cx="820" cy="300" r="11" fill="#ea580c"/>
+  <circle cx="1015" cy="300" r="11" fill="#2563eb"/>
+
+  <line x1="835" y1="340" x2="1000" y2="340" class="arrow"/>
+  <text x="917" y="329" text-anchor="middle" class="small">evidence delay d</text>
+
+  <text x="820" y="382" text-anchor="middle" class="body">attribution t</text>
+  <text x="1015" y="382" text-anchor="middle" class="body">availability t+d</text>
+
+  <rect x="705" y="408" width="390" height="58" rx="12" class="orange"/>
+  <text x="900" y="434" text-anchor="middle" class="small">q(t+d) is assigned to event time t</text>
+  <text x="900" y="456" text-anchor="middle" class="small">but evidence exists only at t+d</text>
 </svg>
