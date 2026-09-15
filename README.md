@@ -28,23 +28,25 @@ Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹
 
 For a causal endpoint score `q_e` and non-negative delay `d`, BLAST defines
 
-\[
+$$
 s_d(t)=q_{t+d}, \qquad r_d(t)=t+d.
-\]
+$$
 
 > **BLAST changes timestamp attribution only.** It does not retrain the detector, alter endpoint-score values, use observations before they arrive, or claim earlier alarm delivery.
 
 <p align="center">
   <img src="assets/paper/figure2_workflow.svg" width="900" alt="BLAST reproducible workflow">
 </p>
+<p align="center"><sub>Fixed causal scoring → bounded attribution → frozen U237-to-M70 confirmation protocol.</sub></p>
 
 ## Method
 
 The submitted study uses a fixed causal trailing sample-standard-deviation score with `W=256`. For M70, each channel is normalized using statistics fitted only on its filename-defined training prefix, the trailing statistic is computed per channel, and channel scores are averaged.
 
 <p align="center">
-  <img src="assets/paper/figure1_attribution.svg" width="720" alt="Endpoint assignment versus BLAST attribution">
+  <img src="assets/paper/figure1_attribution.svg" width="760" alt="Endpoint assignment versus BLAST attribution">
 </p>
+<p align="center"><sub>Conventional endpoint assignment and BLAST attribution use the same causal endpoint-score stream; only the timestamp assignment changes.</sub></p>
 
 The operating-point protocol is frozen:
 
@@ -58,9 +60,9 @@ The exact score construction, numerical scale floor, five selection gates, VUS c
 
 ## Main results
 
-The primary comparison holds the underlying causal endpoint-score stream fixed and changes only temporal attribution.
+The primary comparison holds the underlying causal endpoint-score stream fixed and changes only temporal attribution. Values below are macro **VUS-PR** unless otherwise stated.
 
-| Cohort | `d=0` VUS-PR | `d=32` VUS-PR | Δ | Wins | Wilcoxon `p` |
+| Cohort | Base (`d=0`) | BLAST (`d=32`) | Gain | Wins | Wilcoxon `p` |
 |---|---:|---:|---:|---:|---:|
 | U237 development | 0.3043 | **0.3300** | +0.0257 | 183 / 237 | 3.85e-22 |
 | M70 confirmation | 0.1705 | **0.2089** | +0.0384 | 54 / 70 | 2.65e-7 |
@@ -68,24 +70,25 @@ The primary comparison holds the underlying causal endpoint-score stream fixed a
 On M70, the frozen configuration yields a **22.6% relative macro VUS-PR increase without retuning**. Family-balanced VUS-PR changes from **0.2427 to 0.2784**, and all 12 family mean gains are positive.
 
 <p align="center">
-  <img src="assets/paper/figure3_confirmation_summary.svg" width="720" alt="Frozen M70 confirmation summary">
+  <img src="assets/paper/figure3_confirmation_summary.svg" width="760" alt="Frozen M70 confirmation summary">
 </p>
+<p align="center"><sub>Frozen M70 confirmation at `d*=32`; no score retuning is performed on M70.</sub></p>
 
 ### Development latency sweep
 
-| Delay `d` | `d/W` | U237 VUS-PR | Δ vs. `d=0` | Selection status |
+| Delay `d` | `d/W` | U237 VUS-PR | Gain vs. `d=0` | Role |
 |---:|---:|---:|---:|---|
 | 0 | 0.000 | 0.3043 | 0.0000 | reference |
 | **32** | 0.125 | **0.3300** | +0.0257 | **selected** |
 | 64 | 0.250 | 0.3503 | +0.0461 | qualifies, not selected |
-| 96 | 0.375 | 0.3676 | +0.0633 | outside low-latency set |
-| 127 | 0.496 | 0.3696 | +0.0653 | outside low-latency set |
+| 96 | 0.375 | 0.3676 | +0.0633 | development sweep only |
+| 127 | 0.496 | 0.3696 | +0.0653 | development sweep only |
 
 The selected delay is therefore the **smallest qualifying low-latency operating point**, not the development optimum.
 
 ### Post-freeze robustness
 
-| Cohort | Metric | `d=0` | `d=32` | Δ | `p` |
+| Cohort | Metric | Base (`d=0`) | BLAST (`d=32`) | Gain | `p` |
 |---|---|---:|---:|---:|---:|
 | U237 | AP | 0.2586 | 0.2864 | +0.0278 | 6.09e-11 |
 | U237 | AUROC | 0.6691 | 0.6903 | +0.0212 | 1.21e-3 |
