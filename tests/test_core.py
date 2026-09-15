@@ -23,12 +23,25 @@ def test_prefix_normalization_uses_prefix_only():
     x = np.array([[1.0], [2.0], [3.0], [1000.0]])
     stats = fit_prefix_normalization(x, train_index=3)
     np.testing.assert_allclose(stats.median, [2.0])
-    # A future outlier must not affect prefix-fitted statistics.
     x2 = x.copy()
     x2[-1, 0] = 1e9
     stats2 = fit_prefix_normalization(x2, train_index=3)
     np.testing.assert_allclose(stats.median, stats2.median)
     np.testing.assert_allclose(stats.scale, stats2.scale)
+
+
+def test_prefix_normalization_uses_sample_std_when_mad_is_zero():
+    x = np.array([[1.0], [1.0], [1.0], [2.0], [1000.0]])
+    stats = fit_prefix_normalization(x, train_index=4)
+    expected = np.std(x[:4, 0], ddof=1)
+    np.testing.assert_allclose(stats.scale, [expected])
+
+
+def test_prefix_normalization_respects_float64_scale_floor():
+    eps = np.finfo(np.float64).eps
+    x = np.array([[1.0], [1.0 + 2 * eps], [1.0 - 2 * eps], [2.0]])
+    stats = fit_prefix_normalization(x, train_index=3)
+    np.testing.assert_allclose(stats.scale, [1.0])
 
 
 def test_bounded_latency_shift_and_release_semantics():
@@ -58,5 +71,4 @@ def test_common_support_pair():
 
 def test_entity_buffer_median_segment_length():
     y = np.array([0, 1, 1, 0, 0, 1, 1, 1, 1, 0])
-    # Segment lengths are 2 and 4; median is 3.
     assert entity_buffer_L(y) == 3
