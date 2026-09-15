@@ -1,59 +1,62 @@
-# Protocol
+# Frozen Experimental Protocol
 
-This document records the public experimental protocol for **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**, submitted to ICASSP 2027.
+This document records the public protocol for **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**, submitted to ICASSP 2027.
 
 ## 1. Causal score generation
 
-At arrival index `e`, observations through `x_e` are available. For a detector using a trailing window of length `W`, the endpoint score is
+At arrival index `e`, observations through `x_e` are available. For a causal detector using a trailing window of length `W`,
 
 ```text
 q_e = f(x_{e-W+1:e}).
 ```
 
-BLAST with non-negative delay `d` attributes
+BLAST with non-negative integer delay `d` defines
 
 ```text
 s_d(t) = q_{t+d}
 r_d(t) = t + d
 ```
 
-where `s_d(t)` is the score assigned to event timestamp `t`, while `r_d(t)` is the evidence-availability index.
+where `s_d(t)` is the score attributed to event timestamp `t` and `r_d(t)` is its evidence-availability index.
 
 Therefore:
 
-- `d = 0` recovers endpoint assignment;
-- `d > 0` is retrospective attribution under an explicit evidence delay;
+- `d=0` recovers conventional endpoint assignment;
+- `d>0` is retrospective attribution under an explicit evidence delay;
 - score generation is unchanged by BLAST;
 - detector parameters are unchanged by BLAST;
 - no observation is used before its declared release time;
-- BLAST does **not** claim earlier computation, earlier alarms, or earlier intervention.
+- BLAST does **not** claim earlier computation, alarms, or intervention.
 
 ## 2. Primary causal score stream
 
-The primary score is a trailing sample standard deviation with
+The primary score is the trailing **sample** standard deviation with
 
 ```text
 W = 256
 ```
 
-and sample-standard-deviation denominator `W - 1` (`ddof=1`).
+and denominator `W-1` (`ddof=1`).
 
 ### U237
 
-The statistic is applied directly to the raw univariate observations.
+The statistic is applied directly to the raw univariate observations. No normalization, smoothing, or learned parameters are used.
 
 ### M70
 
-Each channel is normalized using statistics fitted on the training prefix only:
+Each channel is normalized using statistics fitted on the training prefix only. For channel `c`:
 
-1. per-channel median;
-2. scale `1.4826 × MAD`;
-3. sample-standard-deviation fallback if the MAD scale is unusable;
-4. fallback scale `1.0` if both previous scales are unusable.
+```text
+m_c   = median(prefix_c)
+a_c   = 1.4826 * median(|prefix_c - m_c|)
+floor = 64 * eps_float64 * max(1, |m_c|)
+```
 
-The trailing sample standard deviation is computed per channel and then averaged across channels to obtain the scalar endpoint score.
+If `a_c` is non-finite or `a_c <= floor`, use the prefix sample standard deviation (`ddof=1`) when that value is finite and greater than the same floor; otherwise use `1.0`.
 
-No anomaly labels, centered windows, or temporal smoothing are used in score generation.
+The complete channel is standardized using the frozen prefix statistics, trailing sample standard deviation is computed independently per channel, and the channel scores are averaged with equal weight.
+
+No anomaly labels, centered windows, temporal smoothing, channel selection, or learned aggregation are used in score generation.
 
 ## 3. U237 development selection
 
@@ -69,55 +72,80 @@ The frozen delay grid is
 D = {0, 32, 64, 96, 127}
 ```
 
-with low-latency candidates
+with predeclared low-latency candidates
 
 ```text
 D_low = {32, 64}.
 ```
 
-For each candidate `d`, paired VUS-PR gains are computed relative to `d = 0`. A candidate is eligible only if all four development conditions hold:
+For each `d`, per-series VUS-PR is compared with `d=0`. A low-latency candidate is eligible only if all five conditions hold:
 
-- mean paired gain `>= 0.015`;
-- median paired gain `> 0`;
-- strict win fraction `>= 0.58`;
+- macro VUS-PR is greater than the `d=0` macro;
+- absolute macro gain is at least `0.015`;
+- median paired gain is positive;
+- strict win fraction is at least `0.58`;
 - two-sided Wilcoxon signed-rank `p < 0.01`.
 
-The operating point is the **smallest eligible delay in `D_low`**. This is a bounded-latency operating-point rule, not a search for the maximum development metric.
+The operating point is the **smallest eligible delay in `D_low`**. Both 32 and 64 qualify, so the frozen choice is
+
+```text
+d* = 32.
+```
+
+This is a bounded-latency operating-point rule, not a search for the maximum development metric.
 
 ## 4. Frozen M70 confirmation
 
-The selected delay and `W = 256` are frozen before M70 confirmation. M70 contains 70 TSB-AD-M series from 12 dataset families; the evaluation start for each series is the training boundary encoded in its filename.
+`W=256` and `d*=32` are frozen before M70 confirmation. M70 contains 70 TSB-AD-M series from 12 dataset families. Evaluation begins at the training boundary encoded in each filename.
 
-The public pipeline separates score generation from label-based evaluation.
+The public pipeline deliberately separates scoring from labels.
 
 ### Stage A — label-free score generation
 
-`scripts/score_m70_label_free.py`:
+[`scripts/score_m70_label_free.py`](../scripts/score_m70_label_free.py):
 
-- reads feature columns only;
-- keeps the final CSV label field opaque at byte level;
+- verifies the frozen dataset/cohort hashes;
+- reads feature columns while leaving the final label field opaque at byte level;
 - fits normalization only on the training prefix;
-- computes the causal endpoint score;
-- creates endpoint-assigned and frozen-delay score arrays;
+- computes the fixed causal endpoint score;
+- creates `d=0` and frozen `d=32` score arrays;
+- stores validity masks and a SHA256 manifest;
 - computes no anomaly metric.
 
 ### Stage B — confirmatory evaluation
 
-`scripts/evaluate_m70_confirmatory.py` then reads labels and evaluates the already generated score package. It does not search for another delay and does not retune the score function.
+[`scripts/evaluate_m70_confirmatory.py`](../scripts/evaluate_m70_confirmatory.py) verifies the label-free package and pointwise SHA256 manifest **before** opening labels. It then evaluates only the already frozen operating point. It does not search for another delay or retune the score function.
 
 ## 5. Primary metric and paired statistics
 
-The primary metric is **VUS-PR** from the pinned `vus==0.0.6` package.
-
-For each series, the temporal tolerance buffer is
+The primary metric is VUS-PR from the pinned package:
 
 ```text
-L_e = max(1, round(median ground-truth anomaly-segment length)).
+vus==0.0.6
 ```
 
-The public wrapper calls the official VUS implementation directly. If VUS cannot be computed, evaluation fails explicitly rather than falling back to a different metric.
+The exact public metric call is equivalent to:
 
-Paired comparisons use strict wins and a two-sided Wilcoxon signed-rank test with:
+```python
+get_metrics(
+    scores,
+    labels,
+    metric="all",
+    version="opt",
+    slidingWindow=L_e,
+    thre=250,
+)
+```
+
+with per-entity temporal buffer
+
+```text
+L_e = max(1, round(median anomaly-segment length)).
+```
+
+The implementation fails explicitly if the expected VUS outputs are unavailable; it does not silently substitute another metric.
+
+Paired tests use strict wins and the two-sided Wilcoxon signed-rank configuration:
 
 ```text
 zero_method = "wilcox"
@@ -125,14 +153,23 @@ correction  = False
 method      = "approx"
 ```
 
-## 6. Formal support and right boundary
+## 6. Right-boundary convention
 
-For delay `d > 0`, the final `d` event timestamps have no corresponding endpoint score inside the observed sequence. The frozen implementation stores full-length arrays and pads those invalid right-boundary entries with zero.
+For `d>0`, the final `d` event timestamps have no corresponding future endpoint score inside the observed sequence. The primary implementation stores a full-length array and zero-fills these invalid right-boundary positions while exposing an explicit validity mask.
 
-The formal support is returned explicitly by `blast.core.make_test_scores`. The helper `blast.core.common_support_pair` evaluates `d = 0` and `d > 0` on identical valid support when a common-support sensitivity analysis is required.
+The post-freeze boundary analysis evaluates both arms on identical support by removing the final 32 timestamps from each stream. This analysis reproduces the paper's common-support check.
 
-## 7. Interpretation
+## 7. Post-freeze robustness
+
+After `d*=32` was frozen, the study additionally evaluates:
+
+- average precision (AP);
+- pointwise AUROC;
+- VUS-ROC;
+- common-support VUS-PR.
+
+These metrics are **not** used to select `d*`. The M70 AUROC increase is numerical but not conventionally significant (`p=0.0657`), and the repository preserves that fact explicitly.
+
+## 8. Interpretation
 
 BLAST measures how timestamp attribution changes agreement between a fixed causal score stream and event labels at an explicitly declared evidence delay. A localization gain does not establish an earlier alarm.
-
-A delay selected on one score stream is not assumed to improve every detector. Cross-detector evaluation is therefore interpreted as a transfer check, not as a second tuning stage.
