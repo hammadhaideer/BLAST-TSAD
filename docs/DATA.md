@@ -4,7 +4,12 @@ BLAST uses the public **TSB-AD** benchmark maintained by The Datum Org:
 
 https://github.com/TheDatumOrg/TSB-AD
 
-Dataset archives are not redistributed by this repository. Obtain them from the benchmark source under its original licensing terms.
+The benchmark maintainers provide the two archives used by this study at:
+
+- TSB-AD-U: https://www.thedatum.org/datasets/TSB-AD-U.zip
+- TSB-AD-M: https://www.thedatum.org/datasets/TSB-AD-M.zip
+
+Dataset archives are not redistributed by this repository. Obtain them from the official benchmark source under its original licensing terms.
 
 ## Expected layout
 
@@ -28,7 +33,7 @@ TSB-AD-U.zip  0c47020d3423723c70773736dbd800369f2b487328becbf339450d1ae5020961
 TSB-AD-M.zip  7de86ac27f30eeb48d833bb061055670e3f3de07defd995cf2bd5db10ccc9a0d
 ```
 
-The experiment runners fail closed when these hashes do not match. This prevents an unnoticed benchmark revision from being mistaken for a reproduction of the submitted study.
+The experiment runners fail closed when these hashes do not match. This prevents an unnoticed benchmark revision from being mistaken for a reproduction of the submitted study. If an official upstream archive ever changes, do not bypass the check and call the result an exact reproduction; record the new archive hash and treat it as a separate replication.
 
 ## Frozen cohorts
 
