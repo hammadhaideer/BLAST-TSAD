@@ -116,6 +116,8 @@ The public pipeline deliberately separates scoring from labels.
 
 [`scripts/evaluate_m70_confirmatory.py`](../scripts/evaluate_m70_confirmatory.py) verifies the label-free package and pointwise SHA256 manifest **before** opening labels. It then evaluates only the already frozen operating point. It does not search for another delay or retune the score function.
 
+M70 is **descriptive confirmation, not a second selection stage**. No pass/fail threshold, acceptance gate, or alternative-delay search is applied to M70. The reported macro score, paired statistics, family-balanced score, and family-wise gains are outputs of the frozen evaluation only.
+
 ## 5. Primary metric and paired statistics
 
 The primary metric is VUS-PR from the pinned package:

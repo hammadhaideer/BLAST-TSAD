@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 PAPER_TITLE = "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies"
 AUTHOR_ORDER = ["Hammad Ali Haider", "Marcin Pietroń", "Roberto Corizzo", "Panpan Zheng"]
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 REQUIRED = [
     "README.md", "CHANGELOG.md", "CONTRIBUTING.md", "pyproject.toml",
@@ -98,6 +98,7 @@ def verify_metadata() -> None:
     init_py = (ROOT / "blast/__init__.py").read_text(encoding="utf-8")
     release_status = (ROOT / "docs/RELEASE_STATUS.md").read_text(encoding="utf-8")
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    confirmatory = (ROOT / "scripts/evaluate_m70_confirmatory.py").read_text(encoding="utf-8")
 
     require_in_order(readme, AUTHOR_ORDER, "README.md")
     require_in_order(pyproject, AUTHOR_ORDER, "pyproject.toml")
@@ -116,6 +117,11 @@ def verify_metadata() -> None:
         raise SystemExit("CITATION.cff: release version mismatch")
     if any(f"v{VERSION}" not in text for text in (readme, release_status, changelog)):
         raise SystemExit("public documentation does not consistently expose the release version")
+
+    if "CONFIRM_GO" in confirmatory or "MIN_GAIN" in confirmatory or "MIN_WIN" in confirmatory:
+        raise SystemExit("M70 confirmatory evaluator contains selection-style gates")
+    if "no confirmation-driven selection or retuning" not in confirmatory:
+        raise SystemExit("M70 confirmatory evaluator does not declare frozen descriptive confirmation")
 
     results = (ROOT / "docs/RESULTS.md").read_text(encoding="utf-8")
     for value in ("0.3042832564", "0.3300181420", "0.1704915933", "0.2089374630", "0.0657"):
@@ -168,6 +174,7 @@ def main() -> None:
     print("PAPER_TITLE: PASS")
     print("AUTHOR_ORDER: PASS")
     print("RELEASE_VERSION: PASS")
+    print("M70_CONFIRMATORY_SEMANTICS: PASS")
     print("U237_COHORT: PASS")
     print("M70_COHORT: PASS")
     print("DOCUMENTATION_ASSETS: PASS")

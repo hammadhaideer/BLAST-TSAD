@@ -4,6 +4,21 @@ All notable public changes to BLAST-TSAD are documented here.
 
 Paper: **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**.
 
+## v1.0.2 — 2026-09-16
+
+Submission-facing cleanup and confirmatory-protocol clarification.
+
+### Correctness and presentation
+
+- removed post-hoc pass/fail-style gates from the M70 confirmatory evaluator; M70 is now represented exactly as a frozen descriptive confirmation stage, with no confirmation-driven selection or retuning;
+- clarified the same distinction in the README and protocol documentation;
+- added direct official TSB-AD archive links while retaining strict frozen SHA256 verification;
+- changed the README badge from “release” to “version” because the repository does not currently publish a GitHub Release object;
+- removed literal Markdown code markers from the M70 figure caption and kept the public figures/table presentation compact and readable;
+- refreshed package and citation metadata to v1.0.2.
+
+No frozen manuscript number, cohort, metric definition, delay-selection rule, or scientific claim changes in v1.0.2.
+
 ## v1.0.1 — 2026-09-16
 
 Reproducibility-hardening release for the ICASSP 2027 submission.

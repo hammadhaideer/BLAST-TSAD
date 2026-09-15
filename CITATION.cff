@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the BLAST manuscript and this repository."
 title: "BLAST-TSAD"
 type: software
-version: "1.0.1"
+version: "1.0.2"
 date-released: "2026-09-16"
 repository-code: "https://github.com/hammadhaideer/BLAST-TSAD"
 license: MIT
@@ -28,4 +28,5 @@ preferred-citation:
       given-names: "Roberto"
     - family-names: "Zheng"
       given-names: "Panpan"
+  year: 2026
   notes: "Manuscript submitted to ICASSP 2027. Proceedings metadata will be added if and when assigned."
