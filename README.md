@@ -9,7 +9,7 @@ Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹
 
 [![CI](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml/badge.svg)](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB.svg)](https://www.python.org/)
-[![Release](https://img.shields.io/badge/release-v1.0.1-2ea44f.svg)](#release-status)
+[![Version](https://img.shields.io/badge/version-v1.0.2-2ea44f.svg)](#release-status)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![ICASSP 2027](https://img.shields.io/badge/ICASSP-2027%20Submission-6A5ACD.svg)](#citation)
 
@@ -54,9 +54,11 @@ The operating-point protocol is frozen:
 2. **low-latency candidates:** `{32,64}`;
 3. **selection:** choose the smallest candidate satisfying every predeclared gate;
 4. **freeze:** select `d*=32`;
-5. **M70 confirmation:** generate scores label-free, then evaluate the frozen setting without retuning.
+5. **M70 confirmation:** generate scores label-free, then evaluate the frozen setting without retuning or any second-stage selection rule.
 
-The exact score construction, numerical scale floor, five selection gates, VUS call, label-access rules, and right-boundary convention are specified in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+M70 is confirmatory only: no M70 threshold, pass/fail gate, or alternative-delay search is used to select or modify the operating point.
+
+The exact score construction, numerical scale floor, five U237 selection gates, VUS call, label-access rules, and right-boundary convention are specified in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
 ## Main results
 
@@ -72,7 +74,7 @@ On M70, the frozen configuration yields a **22.6% relative macro VUS-PR increase
 <p align="center">
   <img src="assets/paper/figure3_confirmation_summary.svg" width="760" alt="Frozen M70 confirmation summary">
 </p>
-<p align="center"><sub>Frozen M70 confirmation at `d*=32`; no score retuning is performed on M70.</sub></p>
+<p align="center"><sub>Frozen M70 confirmation at d*=32; no score retuning or delay reselection is performed on M70.</sub></p>
 
 ### Development latency sweep
 
@@ -143,9 +145,12 @@ BLAST_PUBLIC_REPOSITORY_VERIFICATION: PASS
 
 ## Data
 
-The experiments use the public [TSB-AD](https://github.com/TheDatumOrg/TSB-AD) benchmark. Raw benchmark archives are **not** redistributed here.
+The experiments use the public [TSB-AD](https://github.com/TheDatumOrg/TSB-AD) benchmark. The official benchmark documentation provides these archives:
 
-Place independently obtained archives at:
+- [TSB-AD-U.zip](https://www.thedatum.org/datasets/TSB-AD-U.zip)
+- [TSB-AD-M.zip](https://www.thedatum.org/datasets/TSB-AD-M.zip)
+
+Raw benchmark archives are **not** redistributed here. Place the independently obtained files at:
 
 ```text
 data/
@@ -154,7 +159,7 @@ data/
     └── TSB-AD-M.zip
 ```
 
-Every experimental runner checks the frozen archive/cohort SHA256 values before computation. See [`docs/DATA.md`](docs/DATA.md).
+Every experimental runner checks the frozen archive/cohort SHA256 values before computation. An upstream archive that does not match the frozen hash is rejected rather than silently treated as an exact reproduction. See [`docs/DATA.md`](docs/DATA.md).
 
 ## Reproduce the paper
 
@@ -196,6 +201,7 @@ The public implementation deliberately fails rather than silently changing the s
 - archive and cohort SHA256 mismatches abort execution;
 - M70 scoring keeps the label field opaque until confirmatory evaluation;
 - M70 pointwise score artifacts are hashed before labels are opened;
+- M70 evaluation is frozen and descriptive only; no confirmation-driven delay search or pass/fail gate is used;
 - VUS evaluation uses the pinned public `vus==0.0.6` implementation and explicit study arguments;
 - non-finite scores abort rather than triggering a fallback metric;
 - paper numbers are checked against the frozen numerical ledger;
@@ -245,7 +251,7 @@ Contextual detectors with different training or information-access protocols are
 
 ## Release status
 
-The current public implementation is **v1.0.1**. It aligns the public code with the frozen audited manuscript protocol and adds end-to-end reproduction and verification without changing the reported scientific results. See [`CHANGELOG.md`](CHANGELOG.md) and [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md).
+The current public implementation is **v1.0.2**. This patch clarifies that M70 is strictly confirmatory, adds direct official dataset links, and polishes public metadata without changing the frozen scientific protocol or reported numerical results. See [`CHANGELOG.md`](CHANGELOG.md) and [`docs/RELEASE_STATUS.md`](docs/RELEASE_STATUS.md).
 
 ## Citation
 
