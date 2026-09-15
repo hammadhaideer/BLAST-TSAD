@@ -3,6 +3,11 @@
 from __future__ import annotations
 
 import numpy as np
+from sklearn.metrics import average_precision_score, roc_auc_score
+
+
+VUS_VERSION = "opt"
+VUS_THRESHOLD_COUNT = 250
 
 
 def anomaly_segment_lengths(labels: np.ndarray) -> list[int]:
@@ -32,31 +37,74 @@ def entity_buffer_L(labels: np.ndarray) -> int:
     return int(max(1, round(float(np.median(segs)))))
 
 
-def official_vus_pr(labels: np.ndarray, scores: np.ndarray) -> float:
-    """Compute VUS-PR with the pinned public ``vus`` implementation.
-
-    No pointwise fallback is used: if the official metric is unavailable or
-    returns an invalid value, the function raises instead of silently changing
-    the metric.
-    """
-
+def _validated_pair(labels: np.ndarray, scores: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     y = np.asarray(labels).astype(int).reshape(-1)
     s = np.asarray(scores, dtype=np.float64).reshape(-1)
     if len(y) != len(s):
         raise ValueError("labels and scores must have equal length")
+    if not np.all((y == 0) | (y == 1)):
+        raise ValueError("labels must be binary")
     if not np.all(np.isfinite(s)):
         raise ValueError("scores contain non-finite values")
+    return y, s
 
+
+def official_vus_metrics(labels: np.ndarray, scores: np.ndarray) -> dict[str, float]:
+    """Compute VUS-PR/VUS-ROC with the exact pinned public VUS call.
+
+    The frozen audit used ``vus==0.0.6`` with ``version='opt'`` and
+    ``thre=250``. No pointwise or alternative fallback is permitted.
+    """
+
+    y, s = _validated_pair(labels, scores)
     from vus.metrics import get_metrics
 
     L_e = entity_buffer_L(y)
-    result = get_metrics(s, y, metric="all", slidingWindow=L_e)
-    if "VUS_PR" not in result:
-        raise RuntimeError("official VUS result contains no VUS_PR")
-    value = float(result["VUS_PR"])
-    if not np.isfinite(value):
-        raise RuntimeError("official VUS returned non-finite VUS_PR")
-    return value
+    result = get_metrics(
+        s,
+        y,
+        metric="all",
+        version=VUS_VERSION,
+        slidingWindow=L_e,
+        thre=VUS_THRESHOLD_COUNT,
+    )
+    missing = {"VUS_PR", "VUS_ROC"} - set(result)
+    if missing:
+        raise RuntimeError(f"official VUS result missing keys: {sorted(missing)}")
+    values = {
+        "vus_pr": float(result["VUS_PR"]),
+        "vus_roc": float(result["VUS_ROC"]),
+        "L_e": int(L_e),
+    }
+    if not np.isfinite(values["vus_pr"]) or not np.isfinite(values["vus_roc"]):
+        raise RuntimeError("official VUS returned a non-finite value")
+    return values
+
+
+def official_vus_pr(labels: np.ndarray, scores: np.ndarray) -> float:
+    """Return VUS-PR from the exact frozen VUS configuration."""
+
+    return official_vus_metrics(labels, scores)["vus_pr"]
+
+
+def evaluation_metrics(labels: np.ndarray, scores: np.ndarray) -> dict[str, float]:
+    """Return the post-freeze metric set used in the manuscript."""
+
+    y, s = _validated_pair(labels, scores)
+    vus = official_vus_metrics(y, s)
+    classes = set(np.unique(y).tolist())
+    if classes != {0, 1}:
+        raise ValueError(f"AUROC requires both classes, found {sorted(classes)}")
+    values = {
+        "vus_pr": vus["vus_pr"],
+        "vus_roc": vus["vus_roc"],
+        "ap": float(average_precision_score(y, s)),
+        "auroc": float(roc_auc_score(y, s)),
+        "L_e": int(vus["L_e"]),
+    }
+    if not all(np.isfinite(v) for k, v in values.items() if k != "L_e"):
+        raise RuntimeError(f"non-finite metric result: {values}")
+    return values
 
 
 def paired_summary(candidate: np.ndarray, baseline: np.ndarray) -> dict[str, float | int]:
