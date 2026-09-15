@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check generated BLAST outputs against the numerical manuscript ledger."""
+"""Check generated BLAST outputs against the frozen manuscript ledger."""
 
 from __future__ import annotations
 
@@ -9,8 +9,27 @@ import math
 from pathlib import Path
 
 ABS_TOL = 5e-10
-EXPECTED_U_SWEEP = {"0": 0.3042832564449439, "32": 0.33001814197604906, "64": 0.3503386608723718, "96": 0.36761371714851354, "127": 0.36956436228563205}
-EXPECTED_M70 = {"d0": 0.17049159333681876, "d32": 0.20893746299321103, "gain": 0.03844586965639227, "wins": 54, "losses": 16, "median_delta": 0.0010183441024261266, "p": 2.6469292099729694e-07, "family_d0": 0.24272532701248975, "family_d32": 0.27836120757182914}
+
+EXPECTED_U_SWEEP = {
+    "0": 0.3042832564449439,
+    "32": 0.33001814197604906,
+    "64": 0.3503386608723718,
+    "96": 0.36761371714851354,
+    "127": 0.36956436228563205,
+}
+
+EXPECTED_M70 = {
+    "d0": 0.17049159333681876,
+    "d32": 0.20893746299321103,
+    "gain": 0.03844586965639227,
+    "wins": 54,
+    "losses": 16,
+    "median_delta": 0.0010183441024261266,
+    "p": 2.6469292099729694e-07,
+    "family_d0": 0.24272532701248975,
+    "family_d32": 0.27836120757182914,
+}
+
 EXPECTED_ROBUST = {
     "u237": {
         "ap": (0.2586017077565239, 0.2864346639804091, 6.091233764437019e-11),
@@ -23,7 +42,19 @@ EXPECTED_ROBUST = {
         "vus_roc": (0.6087072548069323, 0.6209005304098136, 0.00019538163395649573),
     },
 }
-EXPECTED_COMMON_ROUNDED = {"u237": (0.3036, 0.3304), "m70": (0.1705, 0.2089)}
+
+EXPECTED_COMMON = {
+    "u237": {
+        "d0": 0.303624181,
+        "d32": 0.330447853,
+        "p": 2.48571e-23,
+    },
+    "m70": {
+        "d0": 0.170531317,
+        "d32": 0.208923014,
+        "p": 1.16342e-07,
+    },
+}
 
 
 def close(got: float, expected: float, label: str, tol: float = ABS_TOL) -> None:
@@ -37,6 +68,7 @@ def main() -> None:
     ap.add_argument("--m70", default="results/m70_confirmatory/summary.json")
     ap.add_argument("--robustness", default="results/postfreeze_robustness/summary.json")
     args = ap.parse_args()
+
     u = json.loads(Path(args.u237).read_text())
     m = json.loads(Path(args.m70).read_text())
     r = json.loads(Path(args.robustness).read_text())
@@ -54,6 +86,7 @@ def main() -> None:
     close(m["macro_vus_pr_d0"], EXPECTED_M70["d0"], "M70 d=0")
     close(m["macro_vus_pr_d32"], EXPECTED_M70["d32"], "M70 d=32")
     close(m["absolute_macro_gain"], EXPECTED_M70["gain"], "M70 gain")
+    close(m["relative_macro_gain"], EXPECTED_M70["gain"] / EXPECTED_M70["d0"], "M70 relative gain")
     if m["paired_d32_vs_d0"]["wins"] != EXPECTED_M70["wins"] or m["paired_d32_vs_d0"]["losses"] != EXPECTED_M70["losses"]:
         raise SystemExit("M70 win/loss count mismatch")
     close(m["paired_d32_vs_d0"]["median_delta"], EXPECTED_M70["median_delta"], "M70 median delta")
@@ -70,13 +103,15 @@ def main() -> None:
             close(got["d32_macro"], d32v, f"{cohort} {metric} d=32")
             close(got["paired"]["wilcoxon_p"], p, f"{cohort} {metric} p", 1e-10)
 
-    for cohort, (d0, d32v) in EXPECTED_COMMON_ROUNDED.items():
+    for cohort, expected in EXPECTED_COMMON.items():
         got = r[cohort]["common_support"]["vus_pr"]
-        if round(got["d0_macro"], 4) != d0 or round(got["d32_macro"], 4) != d32v:
-            raise SystemExit(f"{cohort} common-support VUS-PR mismatch: {got['d0_macro']} -> {got['d32_macro']}")
+        close(got["d0_macro"], expected["d0"], f"{cohort} common-support VUS-PR d=0", 5e-9)
+        close(got["d32_macro"], expected["d32"], f"{cohort} common-support VUS-PR d=32", 5e-9)
+        close(got["paired"]["wilcoxon_p"], expected["p"], f"{cohort} common-support VUS-PR p", 5e-12)
 
     if r["m70"]["full"]["auroc"]["paired"]["wilcoxon_p"] < 0.05:
         raise SystemExit("M70 AUROC unexpectedly became significant")
+
     print("BLAST_MANUSCRIPT_NUMBERS: PASS")
 
 
