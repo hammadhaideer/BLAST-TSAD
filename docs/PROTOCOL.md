@@ -78,13 +78,14 @@ with predeclared low-latency candidates
 D_low = {32, 64}.
 ```
 
-For each `d`, per-series VUS-PR is compared with `d=0`. A low-latency candidate is eligible only if all five conditions hold:
+For each `d`, per-series VUS-PR is compared with `d=0`. A low-latency candidate is eligible only if the four criteria stated in the manuscript all hold:
 
-- macro VUS-PR is greater than the `d=0` macro;
-- absolute macro gain is at least `0.015`;
+- absolute macro VUS-PR gain is at least `0.015`;
 - median paired gain is positive;
 - strict win fraction is at least `0.58`;
 - two-sided Wilcoxon signed-rank `p < 0.01`.
+
+The implementation also asserts that the candidate macro VUS-PR exceeds the `d=0` macro. This is a redundant consistency check because an absolute gain of at least `0.015` already implies macro superiority; it does not add a separate selection condition or change the selected operating point.
 
 The operating point is the **smallest eligible delay in `D_low`**. Both 32 and 64 qualify, so the frozen choice is
 
