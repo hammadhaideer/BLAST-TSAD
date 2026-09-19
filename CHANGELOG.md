@@ -4,6 +4,16 @@ All notable public changes to BLAST-TSAD are documented here.
 
 Paper: **BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies**.
 
+## Submission metadata synchronization — 2026-09-19
+
+Submission-facing metadata and documentation were synchronized with the final manuscript:
+
+- updated the public author list to Hammad Ali Haider and Panpan Zheng in the README, package metadata, citation metadata, and repository verification checks;
+- aligned the U237 selection documentation with the four eligibility criteria stated in the manuscript;
+- retained the implementation's macro-superiority assertion as a redundant consistency check implied by the minimum-gain criterion.
+
+No experiment, cohort, metric, reported number, or frozen scientific protocol was changed by this metadata update.
+
 ## v1.0.2 — 2026-09-16
 
 Submission-facing cleanup and confirmatory-protocol clarification.
