@@ -10,10 +10,6 @@ authors:
   - family-names: "Haider"
     given-names: "Hammad Ali"
     orcid: "https://orcid.org/0009-0006-5678-9954"
-  - family-names: "Pietroń"
-    given-names: "Marcin"
-  - family-names: "Corizzo"
-    given-names: "Roberto"
   - family-names: "Zheng"
     given-names: "Panpan"
 preferred-citation:
@@ -22,10 +18,6 @@ preferred-citation:
   authors:
     - family-names: "Haider"
       given-names: "Hammad Ali"
-    - family-names: "Pietroń"
-      given-names: "Marcin"
-    - family-names: "Corizzo"
-      given-names: "Roberto"
     - family-names: "Zheng"
       given-names: "Panpan"
   year: 2026
