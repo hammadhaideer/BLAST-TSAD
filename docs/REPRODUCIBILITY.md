@@ -95,7 +95,7 @@ The same pipeline can be run step by step.
 python scripts/select_u237_delay.py
 ```
 
-This stage computes the raw univariate causal Std256 stream, evaluates the frozen delay grid `D={0,32,64,96,127}`, applies the five predeclared development gates, and selects the smallest passing low-latency candidate from `{32,64}`.
+This stage computes the raw univariate causal Std256 stream, evaluates the frozen delay grid `D={0,32,64,96,127}`, applies the four manuscript eligibility criteria, and selects the smallest passing low-latency candidate from `{32,64}`. The code also checks macro superiority as a redundant consistency assertion implied by the minimum-gain criterion.
 
 ### M70 label-free scoring
 
@@ -162,7 +162,7 @@ For the submitted protocol, do not change:
 - M70 filename-defined training-prefix boundaries;
 - the primary window `W=256`;
 - the delay grid or low-latency candidate set;
-- the five development-selection gates;
+- the four manuscript development-selection criteria (with the redundant macro-superiority consistency assertion retained in code);
 - M70 prefix-normalization semantics;
 - label-free scoring / confirmatory evaluation separation;
 - VUS-PR semantics and per-entity temporal buffer definition;
