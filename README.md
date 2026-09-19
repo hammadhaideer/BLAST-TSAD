@@ -4,8 +4,8 @@
 
 **Reference implementation and reproducibility companion for the ICASSP 2027 submission**
 
-Hammad Ali Haider¹ · Marcin Pietroń² · Roberto Corizzo³ · Panpan Zheng¹  
-¹ Xinjiang University · ² AGH University of Krakow · ³ American University
+Hammad Ali Haider¹ · Panpan Zheng¹  
+¹ Xinjiang University
 
 [![CI](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml/badge.svg)](https://github.com/hammadhaideer/BLAST-TSAD/actions/workflows/ci.yml)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB.svg)](https://www.python.org/)
@@ -58,7 +58,7 @@ The operating-point protocol is frozen:
 
 M70 is confirmatory only: no M70 threshold, pass/fail gate, or alternative-delay search is used to select or modify the operating point.
 
-The exact score construction, numerical scale floor, five U237 selection gates, VUS call, label-access rules, and right-boundary convention are specified in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
+The exact score construction, numerical scale floor, U237 selection criteria, VUS call, label-access rules, and right-boundary convention are specified in [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
 ## Main results
 
@@ -258,7 +258,7 @@ The current public implementation is **v1.0.2**. This patch clarifies that M70 i
 This repository accompanies the **ICASSP 2027 submission**. Until proceedings metadata are available, use [`CITATION.cff`](CITATION.cff):
 
 ```text
-Hammad Ali Haider, Marcin Pietroń, Roberto Corizzo, and Panpan Zheng,
+Hammad Ali Haider and Panpan Zheng,
 "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies,"
 submitted to ICASSP 2027, 2026.
 ```
