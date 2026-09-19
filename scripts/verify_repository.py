@@ -13,7 +13,6 @@ sys.path.insert(0, str(ROOT))
 
 PAPER_TITLE = "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies"
 AUTHOR_ORDER = ["Hammad Ali Haider", "Panpan Zheng"]
-LEGACY_AUTHOR_TOKENS = ["Pietroń", "Corizzo"]
 VERSION = "1.0.2"
 
 REQUIRED = [
@@ -108,14 +107,12 @@ def verify_metadata() -> None:
         ['family-names: "Haider"', 'family-names: "Zheng"'],
         "CITATION.cff",
     )
-    for source_name, source_text in (
-        ("README.md", readme),
-        ("pyproject.toml", pyproject),
-        ("CITATION.cff", citation),
-    ):
-        for token in LEGACY_AUTHOR_TOKENS:
-            if token in source_text:
-                raise SystemExit(f"{source_name}: legacy author token still present: {token}")
+    if readme.count("Hammad Ali Haider") < 2 or readme.count("Panpan Zheng") < 2:
+        raise SystemExit("README.md: submission authorship is incomplete")
+    if pyproject.count('{name = "') != len(AUTHOR_ORDER):
+        raise SystemExit("pyproject.toml: project author count does not match the manuscript")
+    if citation.count("family-names:") != 2 * len(AUTHOR_ORDER):
+        raise SystemExit("CITATION.cff: software and preferred-citation author counts do not match the manuscript")
 
     if f'__version__ = "{VERSION}"' not in init_py:
         raise SystemExit("blast/__init__.py: package version mismatch")
