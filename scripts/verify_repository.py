@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 PAPER_TITLE = "BLAST: Bounded-Latency Attribution of Streaming Time-Series Anomalies"
-AUTHOR_ORDER = ["Hammad Ali Haider", "Marcin Pietroń", "Roberto Corizzo", "Panpan Zheng"]
+AUTHOR_ORDER = ["Hammad Ali Haider", "Panpan Zheng"]
 VERSION = "1.0.2"
 
 REQUIRED = [
@@ -104,8 +104,7 @@ def verify_metadata() -> None:
     require_in_order(pyproject, AUTHOR_ORDER, "pyproject.toml")
     require_in_order(
         citation,
-        ['family-names: "Haider"', 'family-names: "Pietroń"',
-         'family-names: "Corizzo"', 'family-names: "Zheng"'],
+        ['family-names: "Haider"', 'family-names: "Zheng"'],
         "CITATION.cff",
     )
 
